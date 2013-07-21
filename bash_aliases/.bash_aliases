@@ -20,6 +20,7 @@ alias srm='sudo apt-get remove'
 alias g='git --no-pager'
 alias gp='git -p'
 alias mg='git help'
+alias gc='git clone'
 
 alias cd..='cd ..'
 alias cgit='cd ~/Documents/git/'

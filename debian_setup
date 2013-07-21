@@ -1,0 +1,49 @@
+#!/bin/bash
+while true; do
+    read -p "Install curl? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y curl; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install vim with pathogen? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y vim; mkdir -p ~/.vim/autoload; mkdir -p ~/.vim/bundle; curl https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim > ~/.vim/autoload/pathogen.vim; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install git? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y git; git config --global color.ui always; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install python things? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y ipython xclip python-requests python-bs4 python-dogtail python-matplotlib; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install OpenJDK and OpenJRE? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y openjdk-7-jre openjdk-7-jdk; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install XMonad and extras? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y xmonad suckless-tools xmobar; break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done

@@ -12,6 +12,8 @@ alias mkjar='jar cmf manifest.mf'
 alias qwerty='setxkbmap us'
 alias dvorak='setxkbmap dvorak'
 
+alias vol='amixer set Master'
+
 alias supg='apt-get upgrade'
 alias supd='apt-get update'
 alias si='apt-get install'
@@ -20,6 +22,7 @@ alias srm='apt-get remove'
 alias g='git --no-pager'
 alias gp='git -p'
 alias mg='git help'
+alias gc='git clone'
 
 alias cd..='cd ..'
 alias cgit='cd ~/Documents/git/'
