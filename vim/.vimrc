@@ -126,3 +126,36 @@ nnoremap td  :tabclose<CR>
 
 "" Misc
 colorscheme desert
+
+"" No bells.
+set noerrorbells visualbell t_vb=
+autocmd GUIEnter * set visualbell t_vb=
+
+"" Reselect visual block after indent/dedent
+vnoremap < <gv
+vnoremap > >gv
+
+"" Move down wrapped lines
+nnoremap j gj
+nnoremap k gk
+
+"" No sudo vim pls
+cmap w!! %!sudo tee > /dev/null %
+
+"" Auto reload vimrc on save
+" au BufWritePost .vimrc so ~/.vimrc
+
+"" Dragging lines
+noremap <A-j> :m+<CR>
+noremap <A-k> :m-2<CR>
+inoremap <A-j> <Esc>:m+<CR>
+inoremap <A-k> <Esc>:m-2<CR>
+vnoremap <A-j> :m'>+<CR>gv
+vnoremap <A-k> :m-2<CR>gv
+
+"" Paste toggle
+set pastetoggle=<F8> "enable paste toggle and map it to F8
+
+"" Run python code on F5
+"" map <f5> :w <CR>!clear <CR>:!python % <CR>
+
