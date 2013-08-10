@@ -5,6 +5,7 @@ link ~/dotfiles/vim/.vimrc ~/.vimrc;
 mkdir ~/.xmonad/
 link ~/dotfiles/xmonad/.xmonad/xmonad.hs ~/.xmonad/xmonad.hs;
 link ~/dotfiles/xmobar/.xmobarrc ~/.xmobarrc;
+link ~/dotfiles/xmodmap/.Xmodmap ~/.xmodmap;
 while true; do
     read -p "Use Debian aliases?" yn
     case $yn in
