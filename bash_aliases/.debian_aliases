@@ -1,6 +1,7 @@
 
 alias minecraft='java -jar /usr/games/MinecraftSP.jar'
 alias starcraft='wine ~/.wine/drive_c/Program\ Files\ \(x86\)/Starcraft/Starcraft.exe'
+
 alias p='python'
 alias iy='ipython'
 alias fire='firefox'
@@ -29,3 +30,4 @@ alias cgit='cd ~/Documents/git/'
 
 alias prvw='head -n 8'
 
+alias grep='grep --color=auto'
