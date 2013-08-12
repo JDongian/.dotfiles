@@ -1,3 +1,5 @@
+alias l = 'ls -ltrh'
+alias ll = 'ls -ash'
 
 alias minecraft='java -jar /usr/games/MinecraftSP.jar'
 alias starcraft='wine ~/.wine/drive_c/Program\ Files\ \(x86\)/Starcraft/Starcraft.exe'
@@ -29,3 +31,5 @@ alias cgit='cd ~/Documents/git/'
 alias prvw='head -n 8'
 
 alias grep='grep --color=auto'
+
+alias network='nm-connection-editor'
