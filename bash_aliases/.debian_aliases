@@ -1,5 +1,6 @@
 alias l='ls -ltrh'
 alias ll='ls -ash'
+alias sl='ls'
 
 alias minecraft='java -jar /usr/games/MinecraftSP.jar'
 alias starcraft='wine ~/.wine/drive_c/Program\ Files\ \(x86\)/Starcraft/Starcraft.exe'
