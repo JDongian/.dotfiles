@@ -1,40 +1,43 @@
-alias l='ls -ltrh'
-alias ll='ls -ash'
-alias sl='ls'
-
-alias minecraft='java -jar /usr/games/MinecraftSP.jar'
-alias starcraft='wine ~/.wine/drive_c/Program\ Files\ \(x86\)/Starcraft/Starcraft.exe'
-
-alias p='python'
-alias iy='ipython'
-alias fire='firefox'
-alias v='sudo vim'
-
-alias rjar='java -jar'
-alias mkjar='jar cmf manifest.mf'
+alias vol='amixer set Master'
 
 alias qwerty='setxkbmap us'
 alias dvorak='setxkbmap dvorak'
-
-alias vol='amixer set Master'
 
 alias supg='apt-get upgrade'
 alias supd='apt-get update'
 alias si='apt-get install'
 alias srm='apt-get remove'
 
+alias l='ls -ltrh'
+alias ll='ls -ash'
+alias prvw='head -n 8'
+alias grep='grep --color=auto'
+alias copy='xclip -sel clip <'
+
+alias sl='ls'
+alias cd..='cd ..'
+
 alias g='git --no-pager'
 alias gp='git -p'
 alias mg='git help'
 alias gc='git clone'
 
-alias cd..='cd ..'
 alias cgit='cd ~/Documents/git/'
 
-alias prvw='head -n 8'
+alias v='sudo vim'
 
-alias grep='grep --color=auto'
+alias p='python'
+alias iy='ipython'
 
-alias copy='xclip -sel clip <'
+alias gcc='gcc -Wall'
+alias g++='g++ -Wall -ansi'
+
+alias rjar='java -jar'
+alias mkjar='jar cmf manifest.mf'
+
+alias fire='firefox'
 
 alias network='nm-connection-editor'
+
+alias minecraft='java -jar /usr/games/MinecraftSP.jar'
+alias starcraft='wine ~/.wine/drive_c/Program\ Files\ \(x86\)/Starcraft/Starcraft.exe'
