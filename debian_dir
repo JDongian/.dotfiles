@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir ~/Documents/git
+cp ~/dotfiles/xmodmap /etc/init.d/xmodmap
+git config --global user.name "Joshua Dong"; git config --global user.email "jdong42@gmail.com"

@@ -1,4 +1,5 @@
 #!/bin/bash
+mkdir ~/Documents/git
 while true; do
     read -p "Install curl? " yn
     case $yn in
