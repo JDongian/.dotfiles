@@ -27,7 +27,7 @@ alias cgit='cd ~/Documents/git/'
 alias v='sudo vim'
 
 alias p='python'
-alias iy='ipython'
+alias i='ipython'
 
 alias gcc='gcc -Wall'
 alias g++='g++ -Wall -ansi'

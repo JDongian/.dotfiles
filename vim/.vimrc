@@ -159,3 +159,6 @@ set pastetoggle=<F8> "enable paste toggle and map it to F8
 "" Run python code on F5
 "" map <f5> :w <CR>!clear <CR>:!python % <CR>
 
+"" Highlight in red lines that are too long
+highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+match OverLength /\%81v.\+/
