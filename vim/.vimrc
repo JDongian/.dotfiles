@@ -161,4 +161,4 @@ set pastetoggle=<F8> "enable paste toggle and map it to F8
 
 "" Highlight in red lines that are too long
 highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-match OverLength /\%81v.\+/
+match OverLength /\%80v.\+/
