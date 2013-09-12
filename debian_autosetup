@@ -6,3 +6,4 @@ apt-get install -y git git-core; git config --global color.ui always;
 apt-get install -y python-pip ipython python-requests python-bs4 python-dogtail python-matplotlib;
 apt-get install openjdk-7-jre openjdk-7-jdk;
 apt-get install xmonad suckless-tools xmobar;
+apt-get install rtorrent;

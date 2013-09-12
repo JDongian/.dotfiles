@@ -142,6 +142,10 @@ nnoremap k gk
 "" No sudo vim pls
 cmap w!! %!sudo tee > /dev/null %
 
+"" Easy hex
+cmap hex %! xxd
+cmap nohex %! xxd -r
+
 "" Auto reload vimrc on save
 " au BufWritePost .vimrc so ~/.vimrc
 
