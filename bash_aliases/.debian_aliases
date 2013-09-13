@@ -1,7 +1,7 @@
 alias vol='amixer set Master'
 
-alias qwerty='setxkbmap us'
-alias dvorak='setxkbmap dvorak'
+alias qwerty='setxkbmap us; xmodmap ~/.Xmodmap;'
+alias dvorak='setxkbmap dvorak; xmodmap ~/.Xmodmap;'
 
 alias supg='apt-get upgrade'
 alias supd='apt-get update'
@@ -39,5 +39,6 @@ alias fire='firefox'
 
 alias network='nm-connection-editor'
 
+alias starcraft='wine ~/.wine/drive_c/Program\ Files/Starcraft/Starcraft.exe'
+alias war3='wine ~/.wine/drive_c/Program\ Files/Warcraft\ III/Frozen\ Throne.exe'
 alias minecraft='java -jar /usr/games/MinecraftSP.jar'
-alias starcraft='wine ~/.wine/drive_c/Program\ Files\ \(x86\)/Starcraft/Starcraft.exe'
