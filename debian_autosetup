@@ -1,9 +1,11 @@
 #!/bin/bash
-apt-get install -y make curl xclip tree g++ htop;
+apt-get upgrade
+apt-get update
+apt-get install -y make curl xclip g++ htop;
 apt-get install -y libssl-dev apache2-utils;
-apt-get install -y vim; mkdir -p ~/.vim/autoload; mkdir -p ~/.vim/bundle; curl https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim > ~/.vim/autoload/pathogen.vim;
+apt-get install -y vim; mkdir -p ~/.vim/autoload; git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle;
 apt-get install -y git git-core; git config --global color.ui always; 
-apt-get install -y python-pip ipython python-requests python-bs4 python-dogtail python-matplotlib;
+apt-get install -y python-pip build-essential python-dev ipython python-requests python-bs4 python-dogtail python-matplotlib;
 apt-get install openjdk-7-jre openjdk-7-jdk;
 apt-get install xmonad suckless-tools xmobar;
 apt-get install rtorrent;
