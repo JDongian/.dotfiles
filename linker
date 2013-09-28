@@ -1,5 +1,5 @@
-#!/bin/bash
 
+#!/bin/bash
 while true; do
     read -p "Delete current .vimrc, .xmonad, .xmobarrc, .Xmodmap, .bash_aliases?" yn
     case $yn in
@@ -30,5 +30,4 @@ while true; do
         * ) echo "Please answer yes or no.";;
     esac
 done
-
-
+source ~/.bash_aliases
