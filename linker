@@ -13,6 +13,7 @@ mkdir ~/.xmonad/
 link ~/dotfiles/xmonad/.xmonad/xmonad.hs ~/.xmonad/xmonad.hs;
 link ~/dotfiles/xmobar/.xmobarrc ~/.xmobarrc;
 link ~/dotfiles/xmodmap/.xmodmap ~/.Xmodmap;
+xmodmap ~/.Xmodmap;
 link ~/dotfiles/rtorrent/.rtorrent.rc ~/.rtorrent.rc;
 while true; do
     read -p "Use Debian aliases?" yn
