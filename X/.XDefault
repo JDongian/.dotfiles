@@ -1,0 +1,4 @@
+*VT100.Translations:      #override <Key>Prior: scroll-back(1,page) \n\
+                          <Key>Next: scroll-forw(1,page) \n \
+                          Shift<Key>Up: scroll-back(1,line) \n \
+                          Shift<Key>Down: scroll-forw(1,line) \n
