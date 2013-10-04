@@ -36,6 +36,7 @@ alias rjar='java -jar'
 alias mkjar='jar cmf manifest.mf'
 
 alias fire='firefox'
+alias chrome='google-chrome'
 
 alias network='nm-connection-editor'
 alias messages='tail -f /var/log/messages'
