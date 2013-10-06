@@ -2,12 +2,21 @@
 apt-get upgrade
 apt-get update
 apt-get install -y make curl xclip g++ htop netcat;
-apt-get install -y vim; mkdir -p ~/.vim/autoload; git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle;
-apt-get install -y git git-core; git config --global color.ui always; 
-apt-get install -y python-pip build-essential python-dev ipython
-pip install requests bs4 matplotlib colorama;
+apt-get install -y vim;
+apt-get install -y git git-core;
+apt-get install -y python-pip build-essential python-dev ipython;
+pip install --upgrade requests bs4 matplotlib colorama;
+echo "Installing optional packages...";
 apt-get install openjdk-7-jre openjdk-7-jdk;
 apt-get install xmonad suckless-tools xmobar;
 apt-get install rtorrent;
 apt-get install libssl-dev apache2-utils;
 apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev;
+while true; do
+    read -p "Setup vundle for vim plugins? " yn
+    case $yn in
+        [Yy]* )  mkdir -p ~/.vim/autoload; git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done

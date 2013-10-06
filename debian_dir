@@ -1,7 +1,27 @@
 #!/bin/bash
 
 #My personal directory paths
-mkdir ~/Documents/git
-mkdir ~/Downloads/torrents
-cp ~/dotfiles/xmodmap /etc/init.d/xmodmap
-git config --global user.name "Joshua Dong"; git config --global user.email "jdong42@gmail.com"
+while true; do
+    read -p "Make git folder and torrent folder? " yn
+    case $yn in
+        [Yy]* ) mkdir ~/Documents/git; mkdir ~/Downloads/torrents; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+#Set caps to ctrl
+while true; do
+    read -p "Rebind CAPS_LOCK to CTRL? " yn
+    case $yn in
+        [Yy]* ) cp ~/dotfiles/xmodmap /etc/init.d/xmodmap; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+#Set git global configs
+echo "Setting git config...";
+git config --global color.ui always; 
+read -p "Git global name: " name;
+read -p "Git global email: " email;
+git config --global user.name $name;
+git config --global user.email $email;

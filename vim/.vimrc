@@ -92,7 +92,7 @@ nnoremap j gj
 nnoremap k gk
 
 "" No sudo vim pls
-cmap w!! %!sudo tee > /dev/null %
+cmap w!! w !sudo tee %
 
 "" Easy hex
 cmap hex %! xxd

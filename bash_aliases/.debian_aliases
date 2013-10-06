@@ -14,7 +14,6 @@ alias prvw='head -n 8'
 alias grep='grep --color=auto'
 alias copy='xclip -sel clip <'
 
-alias sl='ls'
 alias cd..='cd ..'
 
 alias g='git --no-pager'
