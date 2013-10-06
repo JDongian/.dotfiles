@@ -1,8 +1,8 @@
 #!/bin/bash
 while true; do
-    read -p "Delete current .vimrc, .xmonad, .xmobarrc, .Xmodmap, .bash_aliases? " yn
+    read -p "Delete current .vimrc, .xmonad, .xmobarrc.hs, .Xmodmap, .bash_aliases? " yn
     case $yn in
-        [Yy]* ) rm -rf ~/.xmonad/; rm ~/.vimrc; rm ~/.xmobarrc; rm ~/.Xmodmap; rm ~/.bash_aliases; rm ~/.rtorrent.rc; break;;
+        [Yy]* ) rm -rf ~/.xmonad/; rm ~/.vimrc; rm ~/.xmobarrc.hs; rm ~/.Xmodmap; rm ~/.bash_aliases; rm ~/.rtorrent.rc; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac
@@ -10,7 +10,7 @@ done
 link ~/dotfiles/vim/.vimrc ~/.vimrc;
 mkdir ~/.xmonad/
 link ~/dotfiles/xmonad/.xmonad/xmonad.hs ~/.xmonad/xmonad.hs;
-link ~/dotfiles/xmobar/.xmobarrc ~/.xmobarrc;
+link ~/dotfiles/xmobar/.xmobarrc.hs ~/.xmobarrc;
 link ~/dotfiles/xmodmap/.xmodmap ~/.Xmodmap;
 xmodmap ~/.Xmodmap;
 link ~/dotfiles/rtorrent/.rtorrent.rc ~/.rtorrent.rc;
