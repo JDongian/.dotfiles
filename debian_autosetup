@@ -7,11 +7,46 @@ apt-get install -y git git-core;
 apt-get install -y python-pip build-essential python-dev ipython;
 pip install --upgrade requests bs4 matplotlib colorama;
 echo "Installing optional packages...";
-apt-get install openjdk-7-jre openjdk-7-jdk;
-apt-get install xmonad suckless-tools xmobar;
-apt-get install rtorrent;
-apt-get install libssl-dev apache2-utils;
-apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev;
+while true; do
+    read -p "Install openJDK and openJRE? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y openjdk-7-jre openjdk-7-jdk; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install xmonad with xmobar and suckless-tools? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y xmonad suckless-tools xmobar; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install rtorrent? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y rtorrent; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install ssl and apache? " yn
+    case $yn in
+        [Yy]* ) apt-get install -y libssl-dev apache2-utils; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+while true; do
+    read -p "Install sdl dev tools? " yn
+    case $yn in
+        [Yy]* ) apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 while true; do
     read -p "Setup vundle for vim plugins? " yn
     case $yn in
