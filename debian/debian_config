@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#Clear existing config
+while true; do
+    read -p "Delete current .vimrc, .xmonad, .xmobarrc.hs, .Xmodmap, .bash_aliases? " yn
+    case $yn in
+        [Yy]* ) rm -rf ~/.xmonad/; rm ~/.vimrc; rm ~/.xmobarrc.hs; rm ~/.Xmodmap; rm ~/.bash_aliases; rm ~/.rtorrent.rc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#Vim config
+while true; do
+    read -p "(re)link .vimrc? " yn
+    case $yn in
+        [Yy]* ) rm ~/.vimrc; link ~/dotfiles/vim/.vimrc ~/.vimrc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#Xmonad config
+while true; do
+    read -p "(re)link xmonad and xmobar configs? " yn
+    case $yn in
+        [Yy]* ) rm -rf ~/.xmonad/; mkdir ~/.xmonad/; link ~/dotfiles/xmonad/.xmonad/xmonad.hs ~/.xmonad/xmonad.hs; link ~/dotfiles/xmobar/.xmobarrc.hs ~/.xmobarrc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#Xmodmap config
+while true; do
+    read -p "(re)link xmodmap configs? " yn
+    case $yn in
+        [Yy]* ) rm ~/.Xmodmap; link ~/dotfiles/xmodmap/.xmodmap ~/.Xmodmap; xmodmap ~/.Xmodmap; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#Xmodmap config
+while true; do
+    read -p "(re)link rtorrent configs? " yn
+    case $yn in
+        [Yy]* ) rm ~/.rtorrent.rc; link ~/dotfiles/rtorrent/.rtorrent.rc ~/.rtorrent.rc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+while true; do
+    read -p "Use Debian aliases? " yn
+    case $yn in
+        [Yy]* ) link ~/dotfiles/bash_aliases/.debian_aliases ~/.bash_aliases; source ~/.bash_aliases; exit;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done

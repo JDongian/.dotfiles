@@ -4,7 +4,7 @@
 while true; do
     read -p "Make git folder and torrent folder? " yn
     case $yn in
-        [Yy]* ) mkdir ~/Documents/git; mkdir ~/Downloads/torrents; break;;
+        [Yy]* ) mkdir -p ~/Documents/git; mkdir -p ~/Downloads/torrents; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac

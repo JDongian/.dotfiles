@@ -5,7 +5,8 @@ apt-get install -y make curl xclip g++ htop netcat;
 apt-get install -y vim;
 apt-get install -y git git-core;
 apt-get install -y python-pip build-essential python-dev ipython;
-pip install --upgrade requests bs4 matplotlib colorama;
+pip install distribute requests beautifulsoup4 colorama;
+sudo pip install --upgrade distribute 
 echo "Installing optional packages...";
 while true; do
     read -p "Install openJDK and openJRE? " yn
