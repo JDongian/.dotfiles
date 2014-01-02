@@ -1,12 +1,11 @@
 #!/bin/bash
-apt-get upgrade
-apt-get update
+apt-get upgrade && apt-get update
 apt-get install -y make curl xclip g++ htop netcat;
 apt-get install -y vim;
 apt-get install -y git git-core;
 apt-get install -y python-pip build-essential python-dev ipython;
-pip install distribute requests beautifulsoup4 colorama;
-sudo pip install --upgrade distribute 
+pip install distribute requests;
+pip install --upgrade distribute 
 echo "Installing optional packages...";
 while true; do
     read -p "Install openJDK and openJRE? " yn
@@ -41,17 +40,9 @@ while true; do
     esac
 done
 while true; do
-    read -p "Install sdl dev tools? " yn
+    read -p "Install sdl 1 dev tools? " yn
     case $yn in
         [Yy]* ) apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev; break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
-while true; do
-    read -p "Setup vundle for vim plugins? " yn
-    case $yn in
-        [Yy]* )  mkdir -p ~/.vim/autoload; git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac

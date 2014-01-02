@@ -2,9 +2,9 @@
 
 #Clear existing config
 while true; do
-    read -p "Delete current .vimrc, .xmonad, .xmobarrc.hs, .Xmodmap, .bash_aliases? " yn
+    read -p "Delete current .vimrc, .xmonad, .xmobarrc.hs, .bash_aliases? " yn
     case $yn in
-        [Yy]* ) rm -rf ~/.xmonad/; rm ~/.vimrc; rm ~/.xmobarrc.hs; rm ~/.Xmodmap; rm ~/.bash_aliases; rm ~/.rtorrent.rc; break;;
+        [Yy]* ) rm -rf ~/.xmonad/; rm ~/.vimrc; rm ~/.xmobarrc.hs; rm ~/.bash_aliases; rm ~/.rtorrent.rc; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac
@@ -30,17 +30,7 @@ while true; do
     esac
 done
 
-#Xmodmap config
-while true; do
-    read -p "(re)link xmodmap configs? " yn
-    case $yn in
-        [Yy]* ) rm ~/.Xmodmap; link ~/dotfiles/xmodmap/.xmodmap ~/.Xmodmap; xmodmap ~/.Xmodmap; break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
-
-#Xmodmap config
+#rtorrent config
 while true; do
     read -p "(re)link rtorrent configs? " yn
     case $yn in
