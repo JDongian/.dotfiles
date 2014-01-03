@@ -33,3 +33,4 @@ function add_vundle() {
         cat ~/.vimrc >> /tmp/.vimrcTEMP 
         mv /tmp/.vimrcTEMP ~/.vimrc
     fi
+}
