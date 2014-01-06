@@ -1,14 +1,5 @@
 #!/bin/bash
 
-while true; do
-    read -p "Setup vundle for vim plugins? " yn
-    case $yn in
-        [Yy]* ) add_vundle; break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
-
 function add_vundle() {
     mkdir -p ~/.vim/autoload;
     if git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle > /dev/null
@@ -33,3 +24,13 @@ function add_vundle() {
         cat ~/.vimrc >> /tmp/.vimrcTEMP 
         mv /tmp/.vimrcTEMP ~/.vimrc
     fi
+}
+
+while true; do
+    read -p "Setup vundle for vim plugins? " yn
+    case $yn in
+        [Yy]* ) add_vundle; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
