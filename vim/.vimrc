@@ -9,7 +9,7 @@ Bundle 'scrooloose/syntastic'
 
 filetype plugin indent on
 
-let g:syntastic_python_checkers=['pylint', 'pep8']
+" let g:syntastic_python_checkers=['pylint', 'pep8']
 
 " Set the default file encoding to UTF-8:
 set encoding=utf-8
@@ -124,5 +124,5 @@ au BufRead,BufNewFile *.py,*.pyw,*.c,*.cpp,*.h match BadWhitespace /\s\+$/
 
 "" Overlength highlighting (>79 chars)
 augroup vimrc_autocmds
-  autocmd BufEnter * highlight OverLength ctermbg=darkgrey "ctermfg=darkred
-  autocmd BufEnter * match OverLength /\%79v.*/
+autocmd BufEnter * highlight OverLength ctermbg=darkgrey "ctermfg=darkred
+autocmd BufEnter * match OverLength /\%79v.*/
