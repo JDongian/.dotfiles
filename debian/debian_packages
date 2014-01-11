@@ -1,6 +1,6 @@
 #!/bin/bash
 apt-get upgrade && apt-get update
-apt-get install -y make curl xclip g++ htop netcat;
+apt-get install -y make curl xclip g++ htop netcat nmap;
 apt-get install -y vim;
 apt-get install -y git git-core;
 apt-get install -y python-pip build-essential python-dev ipython;
