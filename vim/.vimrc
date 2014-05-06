@@ -11,6 +11,8 @@ filetype plugin indent on
 
 " let g:syntastic_python_checkers=['pylint', 'pep8']
 
+" I'm mad at this.
+set timeoutlen=0
 " Set the default file encoding to UTF-8:
 set encoding=utf-8
 " Automatically indent based on file type: 
