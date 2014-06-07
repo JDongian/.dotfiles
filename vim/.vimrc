@@ -1,4 +1,4 @@
-"" Vundle
+" Vundle
 filetype off
 set nocompatible
 set rtp+=~/.vim/bundle/vundle
@@ -6,80 +6,111 @@ call vundle#rc()
 
 Bundle 'gmarick/vundle'
 Bundle 'scrooloose/syntastic'
+Bundle 'Lokaltog/vim-distinguished'
 
 filetype plugin indent on
 
-" let g:syntastic_python_checkers=['pylint', 'pep8']
+" Syntastic settings
+" Python
+let g:syntastic_python_checkers=['pylint', 'pep8']
+let g:syntastic_tex_checkers=['']
+" Use modern C++
+let g:syntastic_cpp_compiler_options = '-std=c++11'
+" Disable java
+let g:syntastic_mode_map = { 'mode': 'active',
+                           \ 'active_filetypes': ['foo', 'bar'],
+                           \ 'passive_filetypes': ['java'] }
 
-" I'm mad at this.
-set timeoutlen=0
-" Set the default file encoding to UTF-8:
-set encoding=utf-8
-" Automatically indent based on file type: 
+" Automatically indent based on file type:
 filetype indent on
-"" Folding
-set foldmethod=indent   "Set folding based on indentation
+" Folding
+set foldmethod=indent       "Set folding based on indentation
 "highlight Folded guibg=brown guifg=blue
 "highlight FoldColumn guibg=darkgrey guifg=white
-set number	        " Show line numbers
-set linebreak           " Break lines at word
-set showbreak=+++ 	" Wrap-broken line prefix
-set showmatch	        " Highlight matching brace
-set hlsearch	        " Highlight all search results
-set smartcase	        " Enable smart-case search
-set ignorecase	        " Always case-insensitive
-set incsearch	        " Searches for strings incrementally
-set autoindent	        " Auto-indent new lines
-set expandtab	        " Use spaces instead of tabs
-set shiftwidth=4	" Number of auto-indent spaces
-set smartindent	        " Enable smart-indent
-set softtabstop=4	" Number of spaces per Tab
-set ruler	        " Show row and column ruler information
-set undolevels=1023      " Number of undo levels
+
+set autoindent              " Auto-indent new lines
+set autoread                " Reload files when changed on disk
 set backspace=indent,eol,start
+set clipboard=unnamed       " Yank and paste with the system clipboard
+set encoding=utf-8          " Set the default file encoding to UTF-8
+set expandtab               " Use spaces instead of tabs
+set hlsearch                " Highlight all search results
+set ignorecase              " Always case-insensitive
+set incsearch               " Searches for strings incrementally
+"set list   " Show trailing whitespace
+set linebreak               " Break lines at word
+set number                  " Show line numbers
+set ruler                   " Show row and column ruler information
+set shiftwidth=4            " Number of auto-indent spaces
+set showbreak=+++           " Wrap-broken line prefix
+set showmatch               " Highlight matching brace
+set smartcase               " Enable smart-case search
+set smartindent             " Enable smart-indent
+set softtabstop=4           " Number of spaces per Tab
+set timeoutlen=100          "Crimes against humanity absolved
+set undolevels=1024         " Num4er of undo levels
 
-"" Easy unhighlight
-nnoremap nh :noh<CR>
+"==================="
+" tmux compatibility"
+"==================="
+" Enable basic mouse behavior such as resizing buffers.
+set mouse=a
+if exists('$TMUX') " Support resizing in tmux
+    set ttymouse=xterm2
+endif
 
-"" Run python code on F5
-"" map <f5> :w <CR>!clear <CR>:!python % <CR>
+" Fix cursor in tmux
+if exists('$TMUX')
+    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+else
+    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+endif
 
-"" Tab management
-nnoremap <C-t>     :tabnew<CR>
-nnoremap tl  :tabnext<CR>
-nnoremap th  :tabprev<CR>
-nnoremap tL  :tablast<CR>
-nnoremap te  :tabedit<Space>
-nnoremap tm  :tabm<Space>
-nnoremap td  :tabclose<CR>
 
-"" Reselect visual block after indent/dedent
+"========="
+" Hotkeys "
+"========="
+" Easy unhighlight
+nnoremap nh :noh<cr>
+
+" Tab management
+nnoremap <C-t>  :tabnew<CR>
+nnoremap te     :tabedit<Space>
+nnoremap tl     :tabnext<CR>
+nnoremap th     :tabprev<CR>
+nnoremap tL     :tablast<CR>
+nnoremap tm     :tabm<Space>
+nnoremap td     :tabclose<CR>
+
+" w!! saves as sudo
+cmap w!! w !sudo tee %
+
+" Reselect visual block after indent/dedent
 vnoremap < <gv
 vnoremap > >gv
 
-"" Move down wrapped lines intutively
+" Move down wrapped lines intutively
 nnoremap j gj
 nnoremap k gk
 
-"" w!! saves as sudo
-cmap w!! w !sudo tee %
-
-"" Easy hex
+" Easy hex
 cmap hex %! xxd
 cmap unhex %! xxd -r
 
-"" DOS/UNIX filetype switch for ^M line endings
+" DOS/UNIX filetype switch for ^M line endings
 cmap dosfile ed ++ff=dos %
 cmap unixfile ed ++ff=unix %
 
-"" Dragging lines
+" Dragging lines
 nnoremap <C-j> :m+<CR>
 nnoremap <C-k> :m-2<CR>
 
-"" F8 toggles paste mode
-set pastetoggle=<F8> 
+" F8 toggles paste mode
+set pastetoggle=<F8>
 
-"" netrw config to emulate NERDtree
+" netrw config to emulate NERDtree
 " Toggle Vexplore with Ctrl-E
 function! ToggleVExplorer()
   if exists("t:expl_buf_num")
@@ -109,22 +140,28 @@ let g:netrw_liststyle=3
 " Change directory to the current buffer when opening files.
 set autochdir
 
-"" Colorscheme
+" Not sure what this does
 let python_highlight_all=1
 syntax enable
-set background=dark
+
+" Colorscheme
 colorscheme desert
 
+" Use proper tabbing/spacing
 au BufRead,BufNewFile *.c,*.h,*.py,*.pyw set expandtab
 au BufRead,BufNewFile Makefile* set noexpandtab
+
 " Use the below highlight group when displaying bad whitespace is desired.
 highlight BadWhitespace ctermbg=darkred guibg=darkred
+
 " Display tabs at the beginning of a line in Python mode as bad.
 au BufRead,BufNewFile *.py,*.pyw,*.c,*.cpp,*.h match BadWhitespace /^\t\+/
+
 " Make trailing whitespace be flagged as bad.
 au BufRead,BufNewFile *.py,*.pyw,*.c,*.cpp,*.h match BadWhitespace /\s\+$/
 
-"" Overlength highlighting (>79 chars)
+" Overlength highlighting (>79 chars)
 augroup vimrc_autocmds
-autocmd BufEnter * highlight OverLength ctermbg=darkgrey "ctermfg=darkred
-autocmd BufEnter * match OverLength /\%79v.*/
+  autocmd BufEnter * highlight OverLength ctermbg=darkgrey "ctermfg=darkred
+  autocmd BufEnter * match OverLength /\%79v.*/
+augroup END
