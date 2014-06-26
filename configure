@@ -1,0 +1,59 @@
+#!/bin/bash
+
+#Clear existing config
+while true; do
+    read -p "Move out current .vimrc, .xmonad, .xmobarrc.hs, .bash_aliases? " yn
+    case $yn in
+        [Yy]* ) mv ~/.xmonad/ ~/.xmonad.old; mv  ~/.vimrc ~/.vimrc.old; mv  ~/.xmobarrc.hs ~/.xmobarrc.hs.old; mv ~/.bash_aliases ~/.bash_aliases.old; mv ~/.rtorrent.rc ~/.rtorrent.rc.old; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#Vim config
+while true; do
+    read -p "(re)link .vimrc? " yn
+    case $yn in
+        [Yy]* ) rm ~/.vimrc; link ~/dotfiles/vim/.vimrc ~/.vimrc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#Xmonad config
+while true; do
+    read -p "(re)link xmonad and xmobar configs? " yn
+    case $yn in
+        [Yy]* ) rm -rf ~/.xmonad/; mkdir ~/.xmonad/; link ~/dotfiles/xmonad/.xmonad/xmonad.hs ~/.xmonad/xmonad.hs; link ~/dotfiles/xmobar/.xmobarrc.hs ~/.xmobarrc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#rtorrent config
+while true; do
+    read -p "(re)link rtorrent configs? " yn
+    case $yn in
+        [Yy]* ) rm ~/.rtorrent.rc; link ~/dotfiles/rtorrent/.rtorrent.rc ~/.rtorrent.rc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+while true; do
+    read -p "Use zshrc? " yn
+    case $yn in
+        [Yy]* ) link ~/dotfiles/zsh/.zshrc ~/.zshrc; source ~/.zshrc; exit;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+while true; do
+    read -p "Use git config? " yn
+    case $yn in
+        [Yy]* ) link ~/dotfiles/git/.gitconfig ~/.gitconfig; exit;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done

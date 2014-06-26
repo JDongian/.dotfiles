@@ -1,7 +1,7 @@
 dotfiles
 ========
-My personal dot files for Debian and Ubuntu.
+My personal dotfiles for Arch, Debian and Ubuntu. (Debian now deprecated)
 
 Instructions
 ======
-Clone to ~/dotfiles and run linker to use my configs.
+Clone to ~/dotfiles and run the 'configure' script to use my configs.
