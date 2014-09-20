@@ -6,14 +6,17 @@ call vundle#rc()
 
 Bundle 'gmarick/vundle'
 Bundle 'scrooloose/syntastic'
-Bundle 'Lokaltog/vim-distinguished'
+" Bundle 'altercation/vim-colors-solarized'
+" Bundle 'Lokaltog/vim-distinguished'
 
 filetype plugin indent on
 
-" Syntastic settings
+""" Syntastic settings
 " Python
 let g:syntastic_python_checkers=['pylint', 'pep8']
 let g:syntastic_tex_checkers=['']
+" Use modern C++
+let g:syntastic_cpp_check_header = 1
 " Use modern C++
 let g:syntastic_cpp_compiler_options = '-std=c++11'
 " Disable java
@@ -31,7 +34,6 @@ set foldmethod=indent       "Set folding based on indentation
 set autoindent              " Auto-indent new lines
 set autoread                " Reload files when changed on disk
 set backspace=indent,eol,start
-set clipboard=unnamed       " Yank and paste with the system clipboard
 set encoding=utf-8          " Set the default file encoding to UTF-8
 set expandtab               " Use spaces instead of tabs
 set hlsearch                " Highlight all search results
@@ -47,27 +49,17 @@ set showmatch               " Highlight matching brace
 set smartcase               " Enable smart-case search
 set smartindent             " Enable smart-indent
 set softtabstop=4           " Number of spaces per Tab
-set timeoutlen=100          "Crimes against humanity absolved
+set timeoutlen=100          " Crimes against humanity absolved
 set undolevels=1024         " Num4er of undo levels
 
 "==================="
 " tmux compatibility"
 "==================="
 " Enable basic mouse behavior such as resizing buffers.
-set mouse=a
+" set mouse=a
 if exists('$TMUX') " Support resizing in tmux
     set ttymouse=xterm2
 endif
-
-" Fix cursor in tmux
-if exists('$TMUX')
-    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
-    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
-else
-    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
-    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
-endif
-
 
 "========="
 " Hotkeys "
@@ -145,7 +137,6 @@ let python_highlight_all=1
 syntax enable
 
 " Colorscheme
-colorscheme desert
 
 " Use proper tabbing/spacing
 au BufRead,BufNewFile *.c,*.h,*.py,*.pyw set expandtab
@@ -165,3 +156,9 @@ augroup vimrc_autocmds
   autocmd BufEnter * highlight OverLength ctermbg=darkgrey "ctermfg=darkred
   autocmd BufEnter * match OverLength /\%79v.*/
 augroup END
+
+" Disable bell sound
+set noerrorbells visualbell t_vb=
+if has('autocmd')
+  autocmd GUIEnter * set visualbell t_vb=
+endif
