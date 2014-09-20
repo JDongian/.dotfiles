@@ -34,10 +34,7 @@ set foldmethod=indent       "Set folding based on indentation
 set autoindent              " Auto-indent new lines
 set autoread                " Reload files when changed on disk
 set backspace=indent,eol,start
-<<<<<<< HEAD
-=======
 "set clipboard=unnamed       " Yank and paste with the system clipboard
->>>>>>> 218e2310f0fb30e87e4593aeaba8b029b75a8418
 set encoding=utf-8          " Set the default file encoding to UTF-8
 set expandtab               " Use spaces instead of tabs
 set hlsearch                " Highlight all search results
@@ -53,38 +50,8 @@ set showmatch               " Highlight matching brace
 set smartcase               " Enable smart-case search
 set smartindent             " Enable smart-indent
 set softtabstop=4           " Number of spaces per Tab
-<<<<<<< HEAD
-set timeoutlen=100          " Crimes against humanity absolved
-set undolevels=1024         " Num4er of undo levels
-=======
 set timeoutlen=200          " Crimes against humanity absolved
 set undolevels=1024         " Number of undo levels
->>>>>>> 218e2310f0fb30e87e4593aeaba8b029b75a8418
-
-"==================="
-" tmux compatibility"
-"==================="
-" Enable basic mouse behavior such as resizing buffers.
-<<<<<<< HEAD
-" set mouse=a
-if exists('$TMUX') " Support resizing in tmux
-    set ttymouse=xterm2
-endif
-=======
-"set mouse=a
-"if exists('$TMUX') " Support resizing in tmux
-"    set ttymouse=xterm2
-"endif
-"
-"" Fix cursor in tmux
-"if exists('$TMUX')
-"    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
-"    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
-"else
-"    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
-"    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
-"endif
->>>>>>> 218e2310f0fb30e87e4593aeaba8b029b75a8418
 
 "========="
 " Hotkeys "
