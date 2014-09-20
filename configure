@@ -2,9 +2,15 @@
 
 #Clear existing config
 while true; do
+<<<<<<< HEAD
     read -p "Delete current .vimrc, .xmonad, .xmobarrc.hs, .bash_aliases? " yn
     case $yn in
         [Yy]* ) rm -rf ~/.xmonad/; rm ~/.vimrc; rm ~/.xmobarrc.hs; rm ~/.bash_aliases; rm ~/.rtorrent.rc; break;;
+=======
+    read -p "Move out current .vimrc, .xmonad, .xmobarrc.hs, .bash_aliases? " yn
+    case $yn in
+        [Yy]* ) mv ~/.xmonad/ ~/.xmonad.old; mv  ~/.vimrc ~/.vimrc.old; mv  ~/.xmobarrc.hs ~/.xmobarrc.hs.old; mv ~/.bash_aliases ~/.bash_aliases.old; mv ~/.rtorrent.rc ~/.rtorrent.rc.old; break;;
+>>>>>>> 218e2310f0fb30e87e4593aeaba8b029b75a8418
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac
