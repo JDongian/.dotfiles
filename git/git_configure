@@ -1,7 +1,9 @@
-#Set git global configs
+# Set git global configs
 echo "Setting git config...";
 git config --global color.ui always;
 read -p "Git global name: " name;
 read -p "Git global email: " email;
+read -p "Git global editor (full path): " editor;
 git config --global user.name $name;
 git config --global user.email $email;
+git config --global core.editor $editor;
