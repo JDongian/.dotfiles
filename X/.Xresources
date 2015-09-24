@@ -1,20 +1,3 @@
-xterm*font: -*-lucidatypewriter-medium-*-*-sans-14-*-*-*-*-*-iso10646-1
-xterm*font1: -*-fixed-medium-r-*-*-18-*-*-*-*-*-iso8859-*
-xterm*font2: -*-*-*-*-*-*-2-*-*-*-*-*-*-*
-xterm*font3: -misc-fixed-*-r-normal-*-8-*-*-*-*-*-iso8859-*
-xterm*font4: -b&h-lucidatypewriter-bold-*-*-*-12-*-*-*-*-*-*-*
-xterm*font5: -*-screen-bold-r-normal-*-16-*-*-*-*-*-iso8859-*
-xterm*font6: -*-lucidatypewriter-medium-*-*-*-18-*-*-*-*-*-*-*
-xterm*font7: -*-lucidatypewriter-medium-*-*-*-20-*-*-*-*-*-*-*
-
-XTerm*background: black
-XTerm*foreground: grey
-XTerm*pointerColor: grey
-XTerm*pointerColorBackground: black
-XTerm*cursorColor: grey
-XTerm*internalBorder: 3
-XTerm*loginShell: true
-XTerm*scrollBar: false
-XTerm*scrollKey: true
-XTerm*saveLines: 1023
-XTerm*multiClickTime: 250 
+URxvt.perl-ext-common: default,matcher
+URxvt.url-launcher: /usr/bin/firefox
+URxvt.matcher.button: 1

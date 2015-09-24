@@ -1,2 +1,50 @@
-XTerm*faceName: Liberation Mono
-XTerm*faceSize: 10
+URxvt*loginShell:true
+!URxvt*transparent:false
+!URxvt*shading:40
+URxvt*scrollBar:false
+!URxvt*scrollstyle:next
+!URxvt*scrollBar_right:false
+!URxvt*transpscrollbar:true
+!URxvt*saveLines:32767
+URxvt*foreground: #dddddd
+URxvt*background: #000001
+
+URxvt.font: xft:terminus:10
+
+! Normal
+! color0    black
+! color1    red
+! color2    green
+! color3    yellow
+! color4    blue
+! color5    purple
+! color6    cyan
+! color7    white
+
+URxvt*color0:    #000000
+URxvt*color1:    #e9594c
+URxvt*color2:    #56c74d
+URxvt*color3:    #ecebbe
+URxvt*color4:    #092dbb
+URxvt*color5:    #ea96eb
+URxvt*color6:    #c9caec
+URxvt*color7:    #f2f2f2
+
+! Light
+! color8    black
+! color9    red
+! color10    green
+! color11    yellow
+! color12    blue
+! color13    purple
+! color14    cyan
+! color15    white
+
+URxvt*color8:    #111111
+URxvt*color9:    #f97266
+URxvt*color10:    #a3f766
+URxvt*color11:    #fcfbcc
+URxvt*color12:    #467edb
+URxvt*color13:    #fba1fb
+URxvt*color14:    #d7d9fc
+URxvt*color15:    #e2e2e2

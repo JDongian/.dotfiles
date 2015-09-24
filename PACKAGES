@@ -1,0 +1,25 @@
+pacman -S sudo \
+openssh \
+vim \
+wpa_supplicant \
+htop \
+tmux \
+git \
+patch \
+cmake \
+nmap \
+zsh \
+dialog \
+xorg-xinit \
+rxvt-unicode \
+firefox \
+ttf-liberation \
+gst-plugins-good \
+imagemagick
+
+# lynx
+# macchanger
+# binutils \
+# make \
+# fakeroot \
+# yaourt
