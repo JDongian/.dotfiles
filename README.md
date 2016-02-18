@@ -1,7 +1,15 @@
 dotfiles
 ========
-My personal dotfiles for Arch, Debian and Ubuntu. (Debian now deprecated)
+My personal dotfiles for Arch Linux.
+
+
+Dependencies
+============
+* GNU stow
+
 
 Instructions
-======
-Clone to ~/dotfiles and run the 'configure' script to use my configs.
+============
+First edit the applications.conf in the root to choose which applications you
+want to import configurations for. Then, run `./install` to install the
+configurations.

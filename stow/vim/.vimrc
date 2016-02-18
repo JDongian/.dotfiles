@@ -1,14 +1,18 @@
 " Vundle
-filetype off
 set nocompatible
-set rtp+=~/.vim/bundle/vundle
-call vundle#rc()
+filetype off
 
-Bundle 'gmarick/vundle'
-Bundle 'scrooloose/syntastic'
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'gmarick/Vundle.vim'
+
+Plugin 'scrooloose/syntastic'
+Plugin 'bling/vim-airline'
 " Bundle 'altercation/vim-colors-solarized'
 " Bundle 'Lokaltog/vim-distinguished'
 
+call vundle#end()
 filetype plugin indent on
 
 """ Syntastic settings
@@ -30,6 +34,9 @@ filetype indent on
 set foldmethod=indent       "Set folding based on indentation
 "highlight Folded guibg=brown guifg=blue
 "highlight FoldColumn guibg=darkgrey guifg=white
+
+"disable paste mode when leaving insert mode
+au InsertLeave * set nopaste
 
 set autoindent              " Auto-indent new lines
 set autoread                " Reload files when changed on disk
@@ -56,7 +63,10 @@ set undolevels=1024         " Number of undo levels
 "========="
 " Hotkeys "
 "========="
-" Easy unhighlight
+" center screen on cursor
+nnoremap <space> zz
+
+" easy unhighlight
 nnoremap nh :noh<cr>
 
 " Tab management
@@ -68,8 +78,8 @@ nnoremap tL     :tablast<CR>
 nnoremap tm     :tabm<Space>
 nnoremap td     :tabclose<CR>
 
-" w!! saves as sudo
-cmap w!! w !sudo tee %
+" C-s saves as sudo
+cnoremap <C-s>  :w !sudo tee %
 
 " Reselect visual block after indent/dedent
 vnoremap < <gv
@@ -78,6 +88,18 @@ vnoremap > >gv
 " Move down wrapped lines intutively
 nnoremap j gj
 nnoremap k gk
+
+" Faster begin and end movement
+noremap H ^
+noremap L $
+
+" Faster up and down movement
+noremap J 24j
+noremap K 24k
+
+" Remap man pages, overwriting the backward search
+nnoremap ? :Man <cword>
+
 
 " Easy hex
 cmap hex %! xxd
@@ -114,7 +136,7 @@ function! ToggleVExplorer()
       let t:expl_buf_num = bufnr("%")
   endif
 endfunction
-map <silent> <C-E> :call ToggleVExplorer()<CR>
+map <silent> <C-F> :call ToggleVExplorer()<CR>
 " Hit enter in the file browser to open the selected
 " file with :vsplit to the right of the browser.
 let g:netrw_browse_split = 4
