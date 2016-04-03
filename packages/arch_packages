@@ -11,10 +11,7 @@ nmap \
 zsh \
 dialog \
 xorg-xinit \
-rxvt-unicode \
 firefox \
-ttf-liberation \
-gst-plugins-good \
 imagemagick
 
 # lynx
@@ -23,3 +20,8 @@ imagemagick
 # make \
 # fakeroot \
 # yaourt
+
+# ttf-liberation \
+
+# gst-plugins-good \
+# rxvt-unicode \
