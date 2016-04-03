@@ -1,4 +1,6 @@
-pacman -S sudo \
+pacman -S \
+stow \
+sudo \
 openssh \
 vim \
 wpa_supplicant \
