@@ -1,9 +1,26 @@
 HISTFILE=~/.histfile
 HISTSIZE=8000
 SAVEHIST=8000
+setopt HIST_IGNORE_DUPS
+
+
+autoload -Uz compinit
+compinit
+
+autoload -U promptinit
+promptinit
+prompt walters
+
+export EDITOR=vim
+export GTK_IM_MODULE=ibus
+export XMODIFIERS=@im=ibus
+export QT_IM_MODULE=ibus
+
+
+
 unsetopt beep
 bindkey -e
-#setopt HIST_IGNORE_DUPS
+
 
 if [ "$TERM" = "linux" ]; then
     echo -en "\e]P7B0ADB0" #lightgrey
@@ -13,6 +30,8 @@ if [ "$TERM" = "linux" ]; then
 fi
 eval $(dircolors ~/.dircolors)
 
+
+## autocompletion
 # Do menu-driven completion.
 zstyle ':completion:*' menu select
 
@@ -29,17 +48,18 @@ zstyle ':completion:*:warnings' format "$fg[red]No matches for:$reset_color %d"
 zstyle ':completion:*:corrections' format '%B%d (errors: %e)%b'
 zstyle ':completion:*' group-name ''
 
-autoload -Uz compinit
-compinit
 
-autoload -U promptinit
-promptinit
-prompt walters
+man() {
+    env LESS_TERMCAP_mb=$'\E[01;31m' \
+    LESS_TERMCAP_md=$'\E[01;38;5;74m' \
+    LESS_TERMCAP_me=$'\E[0m' \
+    LESS_TERMCAP_se=$'\E[0m' \
+    LESS_TERMCAP_so=$'\E[38;5;246m' \
+    LESS_TERMCAP_ue=$'\E[0m' \
+    LESS_TERMCAP_us=$'\E[04;38;5;146m' \
+    man "$@"
+}
 
-export EDITOR=vim
-export GTK_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
-export QT_IM_MODULE=ibus
 
 alias l="ls -F --color=auto"
 alias ls="ls -F --color=auto"
