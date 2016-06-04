@@ -1,4 +1,5 @@
 pacman -S \
+base-devel \
 stow \
 sudo \
 openssh \
@@ -12,7 +13,13 @@ cmake \
 nmap \
 zsh \
 dialog \
+xorg-server \
+ttf-croscore \
+terminus-font
 xorg-xinit \
+i3-wm \
+dmenu \
+conky \
 firefox \
 imagemagick
 
