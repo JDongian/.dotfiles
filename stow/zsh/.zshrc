@@ -16,11 +16,8 @@ export GTK_IM_MODULE=ibus
 export XMODIFIERS=@im=ibus
 export QT_IM_MODULE=ibus
 
-
-
 unsetopt beep
 bindkey -e
-
 
 if [ "$TERM" = "linux" ]; then
     echo -en "\e]P7B0ADB0" #lightgrey
@@ -30,6 +27,7 @@ if [ "$TERM" = "linux" ]; then
 fi
 eval $(dircolors ~/.dircolors)
 
+eval $(keychain --eval --quiet id_rsa ~/.ssh/id_rsa)
 
 ## autocompletion
 # Do menu-driven completion.
