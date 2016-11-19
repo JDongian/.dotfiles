@@ -103,3 +103,5 @@ alias ocaml='rlwrap ocaml'
 
 alias octave='octave-cli'
 
+#source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+

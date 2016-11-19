@@ -1,36 +1,54 @@
-pacman -S \
-base-devel \
-stow \
-sudo \
-openssh \
-vim \
-wpa_supplicant \
-htop \
-tmux \
-git \
-patch \
-cmake \
-nmap \
-zsh \
-dialog \
-xorg-server \
-ttf-croscore \
-terminus-font
-xorg-xinit \
-i3-wm \
-dmenu \
-conky \
-firefox \
-imagemagick
+#!/bin/bash
 
-# lynx
-# macchanger
-# binutils \
-# make \
-# fakeroot \
-# yaourt
+# install too many fonts
+yaourt -S culmus ttf-paratype ttf-google-fonts-git all-repository-fonts --noconfirm
 
-# ttf-liberation \
+yaourt -S \
+    stow \
+    wpa_supplicant \
+    macchanger \
+    git \
+    cmake \
+    zsh \
+    zsh-syntax-highlighting \
+    zsh-completions \
+    dialog \
+    xorg-server \
+    xorg-xinit \
+    xorg-xrandr \
+    dmenu \
+    conky \
+    compton \
+    keychain \
+    termite \
+    vim \
+    ntp \
+    openssh \
+    htop \
+    tmux \
+    i3-wm \
+    i3lock \
+    nmap \
+    keepass \
+    imagemagick \
+    evince
+    # firefox \
+    # chromium \
+    # brave \
+    # lynx \
 
-# gst-plugins-good \
-# rxvt-unicode \
+    # gpicview \
+    # pinta \
+    # gimp \
+    # inkscape \
+
+    # terminus-font \
+    # noto-fonts-emoji \
+    # ttf-croscore \
+    # ttf-baekmuk \
+    # wqy-microhei \
+    # ttf-arphic-uming \
+    # ttf-liberation \
+
+    # gst-plugins-good \
+    # rxvt-unicode \

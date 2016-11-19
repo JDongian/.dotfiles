@@ -1,14 +1,21 @@
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+DOTFILES="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+
+# set up sudo stuff
+# TODO
+# su $USER;
 
 # packages
-sudo $DIR/packages/arch_packages;
+(
+bash -x $DOTFILES/packages/yaourt_install;
+bash -x $DOTFILES/packages/arch_packages;
+)
 
 # stow
-cd $DIR/stow;
+cd $DOTFILES/stow;
 stow *;
 
 # scripts
-for SCRIPT in $DIR/scripts/*/configure.sh
+for SCRIPT in $DOTFILES/scripts/*/configure.sh
 do
     if [ -f $SCRIPT -a -x $SCRIPT ]
     then
