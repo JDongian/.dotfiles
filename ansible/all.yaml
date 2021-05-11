@@ -3,10 +3,13 @@
   hosts: all
   gather_facts: yes
   roles:
-    - homeuser
-    - pacman
-    - packages
-    - fish
-    - git
-    - neovim
-    - sway
+      #     - homeuser
+      #     - pacman
+      #     - packages
+      #     - stow
+      #     - fish
+      #     - git
+      #     - neovim
+      #     - sway
+    - conky
+    - networkmanager

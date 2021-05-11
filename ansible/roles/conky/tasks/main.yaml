@@ -1,0 +1,14 @@
+---
+- name: install conky
+  become: yes
+  pacman:
+    name: conky
+
+- name: use stow for configuration
+  become: yes
+  become_user: "{{ username }}"
+  stow:
+    state: present
+    package: conky
+    dir: '$HOME/.dotfiles/stow/'
+    target: '$HOME/.config'
