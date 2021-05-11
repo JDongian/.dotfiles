@@ -2,7 +2,9 @@
 - name: install sway
   become: yes
   pacman:
-    name: sway
+    # glib2 needs to be up to date for sway.
+    name: sway, glib2
+    state: latest
 
 - name: use stow for configuration
   become: yes
@@ -11,10 +13,12 @@
     state: present
     package: sway
     dir: '$HOME/.dotfiles/stow/'
-    target: '$XDG_CONFIG_HOME'
+    target: '$HOME/.config'
 
 - name: set mod key
+  become: yes
+  become_user: "{{ username }}"
   lineinfile: 
-      dest: '$XDG_CONFIG_HOME/sway/config'
+      dest: '$HOME/.config/sway/config'
       regexp: ^set $mod .*
       line: "set $mod {{ i3_mod_key }}"

@@ -11,4 +11,4 @@
     state: present
     package: neovim
     dir: '$HOME/.dotfiles/stow/'
-    target: '$XDG_CONFIG_HOME'
+    target: '$HOME/.config'

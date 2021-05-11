@@ -1,0 +1,11 @@
+---
+- name: install network connection tools
+  become: yes
+  pacman:
+    name: networkmanager, nm-connection-editor, network-manager-applet
+
+- name: enable nm at boot
+  become: yes
+  systemd:
+    name: NetworkManager.service
+    enabled: yes

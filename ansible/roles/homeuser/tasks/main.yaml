@@ -1,15 +1,27 @@
 ---
-- name: create sudo group
-  group:
-    name: sudo
-
 - name: create non-root sudo user
   user:
     name: "{{ username }}"
     append: yes
     groups:
-        - sudo
+        - wheel
     state: present
     ssh_key_type: ed25519
     system: no
     create_home: yes
+
+- name: Giving passwordless access to pacman
+  become: true
+  lineinfile:
+    path: /etc/sudoers
+    regexp: '^# %wheel ALL=(ALL) NOPASSWD: ALL$'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+# - name: set XDG_CONFIG_PATH
+#   become_user: "{{ username }}"
+#   become: yes
+#   lineinfile:
+#     create: yes
+#     path: '$HOME/.pam_environment'
+#     line: 'export XDG_CONFIG_HOME="$HOME/.config"'

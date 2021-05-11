@@ -1,6 +1,10 @@
-# i3 config file (v4)
-#
-# Please see http://i3wm.org/docs/userguide.html for a complete reference!
+input * {
+    xkb_layout "us,us"
+    xkb_variant "dvorak,"
+    xkb_options "grp:alt_space_toggle"
+}
+
+# input <identifier> xkb_model "chromebook"
 
 set $mod Mod4
 
@@ -162,5 +166,5 @@ bar {
 }
 
 client.focused #4c7899 #704070 #ddccdd #ce7ec4 
-new_window pixel
-# new_window 1pixel
+
+default_border pixel 1

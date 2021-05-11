@@ -1,6 +1,12 @@
+---
+- name: install stow
+  pacman:
+    name: stow
+
 - name: clone dotfiles for stow
   become: yes
   become_user: "{{ username }}"
   git:
     dest: '$HOME/.dotfiles'
     repo: "{{ dotfile_repo }}"
+    force: yes
