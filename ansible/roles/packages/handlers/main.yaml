@@ -1,0 +1,3 @@
+---
+- name: pacman-clear-cache
+  command: pacman -Scc

@@ -1,0 +1,10 @@
+---
+- name: install fish
+  pacman:
+    name: fish
+
+- name: configure fish for home user
+  become: yes
+  user:
+    name: "{{ username }}"
+    shell: /usr/bin/fish

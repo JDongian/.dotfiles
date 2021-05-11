@@ -1,0 +1,14 @@
+---
+- name: install neovim
+  become: yes
+  pacman:
+    name: neovim
+
+- name: use stow for configuration
+  become: yes
+  become_user: "{{ username }}"
+  stow:
+    state: present
+    package: neovim
+    dir: '$HOME/.dotfiles/stow/'
+    target: '$XDG_CONFIG_HOME'

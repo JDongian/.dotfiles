@@ -1,0 +1,20 @@
+---
+- name: install sway
+  become: yes
+  pacman:
+    name: sway
+
+- name: use stow for configuration
+  become: yes
+  become_user: "{{ username }}"
+  stow:
+    state: present
+    package: sway
+    dir: '$HOME/.dotfiles/stow/'
+    target: '$XDG_CONFIG_HOME'
+
+- name: set mod key
+  lineinfile: 
+      dest: '$XDG_CONFIG_HOME/sway/config'
+      regexp: ^set $mod .*
+      line: "set $mod {{ i3_mod_key }}"

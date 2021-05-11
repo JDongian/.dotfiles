@@ -1,0 +1,45 @@
+---
+ansible_python_interpreter: auto
+
+dotfile_repo: https://github.com/JDongian/.dotfiles.git
+
+# also for sway
+# i3_mod_key: Mod4
+i3_mod_key: Mod1
+
+# user creation
+username: joshua
+
+# for gitconfig
+email: jdong42@gmail.com
+fullname: Joshua Dong
+
+packages:
+    - sudo
+    - git
+    - bash
+    - tmux
+    - htop
+    - iotop
+    - tree
+    - nmap
+    - keychain
+    - openssh
+    - ntp
+    - fish
+    - macchanger
+    - wayland
+    - dmenu
+    - alacritty
+    - sway
+    - conky
+    - neovim
+    - imagemagick
+    - evince
+    - chromium 
+    - terminus-font
+    - noto-fonts-emoji
+    - ttf-baekmuk
+    - wqy-microhei
+    - ttf-arphic-uming
+    - ttf-liberation

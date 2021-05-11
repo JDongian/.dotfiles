@@ -1,0 +1,12 @@
+---
+- name: All roles
+  hosts: all
+  gather_facts: yes
+  roles:
+    - homeuser
+    - pacman
+    - packages
+    - fish
+    - git
+    - neovim
+    - sway

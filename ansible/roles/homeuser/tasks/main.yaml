@@ -1,0 +1,15 @@
+---
+- name: create sudo group
+  group:
+    name: sudo
+
+- name: create non-root sudo user
+  user:
+    name: "{{ username }}"
+    append: yes
+    groups:
+        - sudo
+    state: present
+    ssh_key_type: ed25519
+    system: no
+    create_home: yes

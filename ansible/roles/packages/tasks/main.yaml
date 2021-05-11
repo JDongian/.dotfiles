@@ -1,0 +1,11 @@
+---
+- name: upgrade packages
+  become: yes
+  pacman:
+    update_cache: yes
+    upgrade: yes
+
+- name: install packages
+  aur:
+    name: "{{ packages }}"
+    state: present
