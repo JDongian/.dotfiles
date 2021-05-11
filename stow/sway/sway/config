@@ -160,8 +160,7 @@ bar {
 
         focused_workspace #ce7ec4 #704070 #eeeeee
     }
-    status_command $HOME/.i3/i3bar
-    #status_command conky -c $HOME/.conkyrc
+    status_command $HOME/.config/sway/i3bar
     position top
 }
 
