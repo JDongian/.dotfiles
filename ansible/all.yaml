@@ -6,10 +6,11 @@
       #     - homeuser
       #     - pacman
       #     - packages
-      #     - stow
+    - stow
       #     - fish
       #     - git
       #     - neovim
       #     - sway
-    - conky
-    - networkmanager
+      # - conky
+      # - networkmanager
+    - wofi
