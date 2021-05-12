@@ -6,6 +6,11 @@
     name: sway, glib2
     state: latest
 
+- name: install fzf
+  become: yes
+  pacman:
+    name: fzf
+
 - name: use stow for configuration
   become: yes
   become_user: "{{ username }}"

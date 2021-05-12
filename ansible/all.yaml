@@ -7,10 +7,10 @@
       #     - pacman
       #     - packages
     - stow
-      #     - fish
-      #     - git
-      #     - neovim
-      #     - sway
-      # - conky
-      # - networkmanager
-    - wofi
+    - fish
+    - git
+    - neovim
+    - sway
+    - conky
+    - networkmanager
+    - chromium
