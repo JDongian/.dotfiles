@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =
@@ -14,6 +14,14 @@
   boot.loader.systemd-boot.configurationLimit = 32;
   boot.loader.systemd-boot.consoleMode = "keep";
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # Fix ThinkPad T490s audio volume issues
+  boot.kernelParams = [ "snd_hda_intel.dmic_detect=0" ];
+
+  # Optional: may help with mute LED keys
+  boot.extraModprobeConfig = ''
+    options snd-hda-intel model=auto
+  '';
 
   # Enable disk encryption with LUKS
   boot.initrd.luks.devices."luks-d2e857c5-e64e-4ec9-ad84-9794dea3ebf2".device = "/dev/disk/by-uuid/d2e857c5-e64e-4ec9-ad84-9794dea3ebf2";
@@ -59,6 +67,8 @@
   # Networking
   networking.hostName = "tile";
   networking.networkmanager.enable = true;
+  networking.networkmanager.dns = lib.mkForce "none";
+  services.resolved.enable = true;
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
   # Experimental features
@@ -258,6 +268,7 @@
     # hyprpanel
     waybar
     hyprcursor
+    wdisplays
 
     foot
     nautilus
@@ -336,6 +347,9 @@
   services.fprintd.enable = true;
 
   services.pulseaudio.enable = false;
+  # Enable rtkit for PipeWire real-time scheduling
+  security.rtkit.enable = true;
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
