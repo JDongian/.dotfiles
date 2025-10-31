@@ -46,6 +46,12 @@
         ./configuration.nix
         inputs.home-manager.nixosModules.default
         {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
+        {
+          # Configure Home Manager for user joshua
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.users.joshua = import ./home.nix;
+        }
       ];
     };
   };

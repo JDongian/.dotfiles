@@ -195,7 +195,6 @@
     jq
     dwdiff
     git
-    neovim
     tmux
     htop
     btop
@@ -275,6 +274,7 @@
 
     brightnessctl
     playerctl
+    pulseaudio  # Provides pactl and other PA utilities for PipeWire-Pulse
 
 
     # # support both 32-bit and 64-bit applications
@@ -324,6 +324,9 @@
     libnotify
     lshw
 
+    texlive.combined.scheme-full
+    pandoc
+
   ];
 
   environment.variables = {
@@ -355,6 +358,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    wireplumber.enable = true;
   };
 
   services.openssh.enable = true;
