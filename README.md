@@ -154,3 +154,4 @@ See the [Home Manager Manual](https://nix-community.github.io/home-manager/) for
 Inspired by:
 - [bbigras/nix-config](https://github.com/bbigras/nix-config) - Modular configuration structure
 - [NixOS community](https://nixos.org/community/) - Countless examples and support
+- [Claude](https://claude.ai) - The real captain now (I use Claude btw)
