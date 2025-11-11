@@ -3,7 +3,9 @@
 {
   # Note: hardware-configuration.nix and hardware-specific settings are now
   # imported via hosts/<hostname>/default.nix for better portability
-  imports = [ ];
+  imports = [
+    ./packages.nix
+  ];
 
   # nixpkgs.overlays = [
   #   (import ./overlays/code-cursor-latest.nix)
@@ -154,171 +156,9 @@
     ];
   };
 
-  fonts.packages = with pkgs; [
-    cm_unicode
-    font-awesome
-    gohufont
-    google-fonts
-    material-icons
-    terminus_font
-  ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
-
   programs.nix-ld.enable = true;
 
-  # System packages
-  environment.systemPackages = with pkgs; [
-    # local net
-    # dnsmasq ???? couldn't figure this out
-    # hostapd
-
-    # libs
-    nss # security
-    nspr # Netscape Portable Runtime, a platform-neutral API for system-level and libc-like functions. For Windsurf.
-    zlib
-    yazi
-
-    # Development tools
-    # exfatprogs
-    vsh  # hashicorp vault sh
-    # hcp  # hashicorp
-    jq
-    dwdiff
-    git
-    tmux
-    htop
-    btop
-    wget
-    clang
-    python3
-    python3Packages.pip
-    deno
-    gcc
-    # nodejs_20
-    nodejs_22
-    # nodejs_23
-    # prisma
-    prisma-engines
-    android-tools
-    nix-ld  # dirty
-    code-cursor
-    # pkgs.code-cursor
-    poppler-utils
-
-    postgresql
-    graphviz  # dot
-    rubberband
-
-    # Utilities
-    yarn
-    toybox
-    # python311Full  # Removed: has been deprecated in nixos-unstable
-    ffmpeg-full
-    espeak
-    nmap
-    dig
-    ngrok
-    busybox
-    bash-completion
-    fastfetch
-    fzf
-    tree
-    lm_sensors
-    xclip
-    openssl
-    dtrx
-    killall
-    fprintd
-    networkmanagerapplet
-    dconf-editor
-    pasystray
-    pavucontrol
-    gnome-keyring
-    uv
-    flyctl
-
-    papirus-icon-theme # not really used by anything, but dolphin
-
-    ibus
-    udiskie
-
-    # Wayland utilities
-    fuzzel
-    wayland-utils
-    wl-clipboard
-    grim
-    slurp
-    dunst
-    hyprlock
-    hypridle
-    swww
-    hyprpicker
-    hyprshot
-    # hyprpanel
-    waybar
-    hyprcursor
-    wdisplays
-
-    foot
-    nautilus
-
-    brightnessctl
-    playerctl
-    pulseaudio  # Provides pactl and other PA utilities for PipeWire-Pulse
-
-
-    # # support both 32-bit and 64-bit applications
-    # wineWowPackages.stable
-
-    # # support 32-bit only
-    # wine
-
-    # # support 64-bit only
-    # (wine.override { wineBuild = "wine64"; })
-
-    # # support 64-bit only
-    # wine64
-
-    # # wine-staging (version with experimental features)
-    # wineWowPackages.staging
-
-    # # winetricks (all versions)
-    # winetricks
-
-    # # native wayland support (unstable)
-    # wineWowPackages.waylandFull
-
-    # Media and design
-    gimp
-    feh
-    imagemagick
-    inkscape
-    font-manager
-    audacity
-    vlc
-    eza
-    tesseract
-    ghostscript
-
-    pinta
-
-    zoom-us
-    evince
-    google-chrome
-    brave
-
-    signal-desktop
-
-    # Miscellaneous
-    starship
-    libgcc
-    bc
-    libnotify
-    lshw
-
-    texlive.combined.scheme-full
-    pandoc
-
-  ];
+  # System packages are now organized in packages.nix
 
   environment.variables = {
     PRISMA_ENGINES_DIRECTORY = "${pkgs.prisma-engines}/bin";
