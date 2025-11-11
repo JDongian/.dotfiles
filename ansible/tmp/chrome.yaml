@@ -1,6 +1,0 @@
----
-- name: chrome
-  hosts: localhost
-  gather_facts: no
-  roles:
-    - chrome
