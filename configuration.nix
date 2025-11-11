@@ -1,10 +1,10 @@
 { config, pkgs, lib, ... }:
 
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-    ];
+  # Note: hardware-configuration.nix and hardware-specific settings are now
+  # imported via hosts/<hostname>/default.nix for better portability
+  imports = [ ];
+
   # nixpkgs.overlays = [
   #   (import ./overlays/code-cursor-latest.nix)
   # ];
@@ -14,17 +14,6 @@
   boot.loader.systemd-boot.configurationLimit = 32;
   boot.loader.systemd-boot.consoleMode = "keep";
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # Fix ThinkPad T490s audio volume issues
-  boot.kernelParams = [ "snd_hda_intel.dmic_detect=0" ];
-
-  # Optional: may help with mute LED keys
-  boot.extraModprobeConfig = ''
-    options snd-hda-intel model=auto
-  '';
-
-  # Enable disk encryption with LUKS
-  boot.initrd.luks.devices."luks-d2e857c5-e64e-4ec9-ad84-9794dea3ebf2".device = "/dev/disk/by-uuid/d2e857c5-e64e-4ec9-ad84-9794dea3ebf2";
 
   # https://nixos.wiki/wiki/Laptop
   powerManagement.enable = true;
@@ -38,9 +27,8 @@
     }
   ];
 
-  services.logind = {
-    lidSwitch = "suspend"; # Hibernate on lid close
-  };
+  # Renamed in nixos-unstable: lidSwitch → settings.Login.HandleLidSwitch
+  services.logind.settings.Login.HandleLidSwitch = "suspend";
 
   systemd.services.hibernate-on-low-battery = {
     description = "Hibernate when battery is critically low";
@@ -65,7 +53,7 @@
 
 
   # Networking
-  networking.hostName = "tile";
+  # Note: hostname is now set in hosts/<hostname>/hardware.nix
   networking.networkmanager.enable = true;
   networking.networkmanager.dns = lib.mkForce "none";
   services.resolved.enable = true;
@@ -109,11 +97,12 @@
 
   services.greetd = {
     enable = true;
-    vt = 7;
+    # vt option removed: VT is now fixed to VT1 in nixos-unstable
     settings = {
       default_session = {
-        user = "joshua";  # Replace with your username
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd Hyprland";
+        user = "joshua";
+        # Renamed: greetd.tuigreet → tuigreet
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd Hyprland";
       };
     };
   };
@@ -148,7 +137,7 @@
   #   gtk3 = {
   #     extraConfig.gtk-application-prefer-dark-theme = true;
   #   };
-  # }; 
+  # };
 
   # Enable XDG portals for Wayland
   xdg.portal = {
@@ -222,7 +211,7 @@
     # Utilities
     yarn
     toybox
-    python311Full
+    # python311Full  # Removed: has been deprecated in nixos-unstable
     ffmpeg-full
     espeak
     nmap
@@ -317,6 +306,8 @@
     google-chrome
     brave
 
+    signal-desktop
+
     # Miscellaneous
     starship
     libgcc
@@ -347,7 +338,7 @@
 
   programs.starship.enable = true;
 
-  services.fprintd.enable = true;
+  # Note: fprintd service is now enabled in host-specific hardware.nix if available
 
   services.pulseaudio.enable = false;
   # Enable rtkit for PipeWire real-time scheduling

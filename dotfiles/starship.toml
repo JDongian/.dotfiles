@@ -1,0 +1,21 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+
+# Replace the '❯' symbol in the prompt with '➜'
+[character] # The name of the module we are configuring is 'character'
+success_symbol = '[\$](white)' # The 'success_symbol' segment is being set to '➜' with the color 'bold green'
+error_symbol = '[\$](white)'
+
+[line_break]
+disabled = true
+
+[status]
+disabled = false
+symbol = ''
+
+[package]
+disabled = true
+
+[shlvl]
+symbol = '#'

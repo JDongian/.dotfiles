@@ -27,8 +27,9 @@
 {
   description = "Nixos config flake";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";  # stable release
-    hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # hyprpanel is now in nixpkgs, no need for overlay anymore
+    # hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
     home-manager = {
       url = "github:nix-community/home-manager";  # Match nixpkgs version
       inputs.nixpkgs.follows = "nixpkgs";
@@ -37,15 +38,17 @@
   outputs = { self, nixpkgs, ... }@inputs: let
     system = "x86_64-linux";
   in {
-    nixosConfigurations.default = nixpkgs.lib.nixosSystem {
+    # ThinkPad T490s configuration
+    nixosConfigurations.tile = nixpkgs.lib.nixosSystem {
       specialArgs = {
         inherit inputs;
         inherit system;
       };
       modules = [
-        ./configuration.nix
+        ./hosts/tile
         inputs.home-manager.nixosModules.default
-        {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
+        # hyprpanel overlay removed - hyprpanel is now available in nixpkgs
+        # {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
         {
           # Configure Home Manager for user joshua
           home-manager.useGlobalPkgs = true;
@@ -54,5 +57,8 @@
         }
       ];
     };
+
+    # Keep 'default' as an alias to current machine for convenience
+    nixosConfigurations.default = self.nixosConfigurations.tile;
   };
 }
