@@ -1,0 +1,15 @@
+---
+- block:
+  - name: install Wireshark
+    dnf:
+      name: wireshark
+      state: present
+  - name: add user to wireshark group
+    user:
+      name: "{{ ansible_user_id }}"
+      groups: wireshark
+      append: True
+  become: True
+  become_user: root
+  tags:
+  - wireshark

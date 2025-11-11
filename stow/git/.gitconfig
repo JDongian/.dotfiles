@@ -1,0 +1,86 @@
+# Based on Nicola Paolucci
+# https://github.com/durdn/cfg/blob/master/.gitconfig
+
+[core]
+	editor = /usr/bin/vim
+	excludesfile = ~/.gitignore_global
+	pager=less -x4
+[color]
+	branch = auto
+	diff = auto
+	status = auto
+	ui = auto
+
+[color "branch"]
+	current = red reverse
+	local = blue
+	remote = green
+
+[color "diff"]
+	meta = yellow
+	frag = magenta
+	old = red bold
+	new = green
+	plain = white
+
+[color "status"]
+	added = yellow
+	changed = green
+	untracked = cyan
+
+[push]
+	default = current
+[pull]
+	default = current
+[diff]
+	memonicprefix = true
+[branch]
+	autosetuprebase = always
+[apply]
+	whitespace = nowarn
+
+[alias]
+	st = status -s
+
+	cl = clone
+
+	ci = commit
+	cm = commit -m
+	cma = commit -a -m
+	ca = commit --amend
+	amend = commit --amend
+	caa = commit -a --amend -C HEAD
+	filelog = log -u
+	fl = log -u
+
+	ai = add --interactive
+
+	co = checkout
+	br = branch 
+    #"!git branch -ra | grep -v done"
+	bra = branch -ra
+    #list commands
+	le = log --oneline --decorate
+	ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
+	ls1 = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
+	lds = log --pretty=format:"%C(yellow)%h\\ %C(green)%ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short --graph
+	ls = log --pretty=format:"%C(green)%h\\ %C(yellow)[%ad]%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
+	lc  = "!f() { git ll "$1"^.."$1"; }; f"
+	lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
+    #list all aliases
+	la = "!git config -l | grep alias | cut -c 7-"
+	diff = diff --word-diff
+	d = diff --word-diff
+	dc = diff --cached
+    #list modified files in last commit
+	dl = "!git ll -1"
+    #diff last commit
+	dlc = diff --cached HEAD^
+	dr  = "!f() { git diff -w "$1"^.."$1"; }; f"
+	diffr  = "!f() { git diff "$1"^.."$1"; }; f"
+	branch = branch -ra
+
+    #stash
+	sl = stash list
+	sa = stash apply
+	ss = stash save

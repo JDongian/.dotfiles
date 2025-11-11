@@ -1,0 +1,5 @@
+---
+- name: install packages
+  aur:
+    name: "{{ packages }}"
+    state: latest

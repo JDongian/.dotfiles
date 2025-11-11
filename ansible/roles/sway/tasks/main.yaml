@@ -1,0 +1,29 @@
+---
+- name: install sway
+  become: yes
+  pacman:
+    # glib2 needs to be up to date for sway.
+    name: sway, glib2
+    state: latest
+
+- name: install fzf
+  become: yes
+  pacman:
+    name: fzf
+
+- name: use stow for configuration
+  become: yes
+  become_user: "{{ username }}"
+  stow:
+    state: present
+    package: sway
+    dir: '$HOME/.dotfiles/stow/'
+    target: '$HOME/.config'
+
+- name: set mod key
+  become: yes
+  become_user: "{{ username }}"
+  lineinfile: 
+      dest: '$HOME/.config/sway/config'
+      regexp: ^set $mod .*
+      line: "set $mod {{ i3_mod_key }}"

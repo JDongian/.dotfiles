@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#Xmodmap config
+while true; do
+    read -p "(re)link .Xmodmap? " yn
+    case $yn in
+        [Yy]* ) rm ~/.Xmodmap; link ~/dotfiles/xmodmap/.xmodmap ~/.Xmodmap; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+#Set caps to ctrl
+while true; do
+    read -p "Rebind CAPS_LOCK to CTRL always? (appends to .xinitrc)" yn
+    case $yn in
+        [Yy]* ) echo "xmodmap ~/.Xmodmap" >> ~/.xinitrc; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done

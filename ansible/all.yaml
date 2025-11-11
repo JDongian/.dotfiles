@@ -1,0 +1,16 @@
+---
+- name: All roles
+  hosts: all
+  gather_facts: yes
+  roles:
+      #     - homeuser
+      #     - pacman
+      #     - packages
+    - stow
+    - fish
+    - git
+    - neovim
+    - sway
+    - conky
+    - networkmanager
+    - chromium
