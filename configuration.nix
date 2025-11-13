@@ -160,6 +160,9 @@
 
   # System packages are now organized in packages.nix
 
+  # Exclude unwanted default packages
+  environment.defaultPackages = lib.mkForce [];
+
   environment.variables = {
     PRISMA_ENGINES_DIRECTORY = "${pkgs.prisma-engines}/bin";
   };
