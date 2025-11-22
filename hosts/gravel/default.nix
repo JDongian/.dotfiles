@@ -6,7 +6,9 @@
     ../../configuration.nix
 
     # Disko declarative disk partitioning
-    # ../../disko.nix
+    ../../disko.nix
+
+    # Hardware detection (generated during install)
     ./hardware-configuration.nix
 
     # X1 Carbon specific tweaks and settings

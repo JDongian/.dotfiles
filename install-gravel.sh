@@ -3,7 +3,7 @@ set -euxo pipefail
 
 sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- \
     --mode disko \
-    --flake github:JDongian/.dotfiles#gravel
+    https://raw.githubusercontent.com/JDongian/.dotfiles/master/disko.nix
 
 sudo nixos-generate-config --root /mnt --no-filesystems
 
