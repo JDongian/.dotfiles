@@ -17,15 +17,6 @@
   boot.loader.systemd-boot.consoleMode = "keep";
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Quiet boot - hide boot messages from login screen
-  boot.kernelParams = [
-    "quiet"
-    "loglevel=3"
-    "systemd.show_status=auto"
-    "rd.udev.log_level=3"
-  ];
-  boot.consoleLogLevel = 3;
-
   # https://nixos.wiki/wiki/Laptop
   powerManagement.enable = true;
   # https://nixos.wiki/wiki/Hibernation
