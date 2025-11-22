@@ -17,6 +17,15 @@
   boot.loader.systemd-boot.consoleMode = "keep";
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Quiet boot - hide boot messages from login screen
+  boot.kernelParams = [
+    "quiet"
+    "loglevel=3"
+    "systemd.show_status=auto"
+    "rd.udev.log_level=3"
+  ];
+  boot.consoleLogLevel = 3;
+
   # https://nixos.wiki/wiki/Laptop
   powerManagement.enable = true;
   # https://nixos.wiki/wiki/Hibernation
@@ -58,6 +67,8 @@
   # Note: hostname is now set in hosts/<hostname>/hardware.nix
   networking.networkmanager.enable = true;
   networking.networkmanager.dns = lib.mkForce "none";
+  # Don't wait for NetworkManager to finish starting
+  systemd.services.NetworkManager-wait-online.enable = false;
   services.resolved.enable = true;
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
@@ -144,16 +155,18 @@
   # Enable XDG portals for Wayland
   xdg.portal = {
     enable = true;
-    wlr.enable = true;
     extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-      pkgs.xdg-desktop-portal
-    ];
-    configPackages = [
-      pkgs.xdg-desktop-portal-gtk
       pkgs.xdg-desktop-portal-hyprland
-      pkgs.xdg-desktop-portal
+      pkgs.xdg-desktop-portal-gtk
     ];
+    config = {
+      common = {
+        default = ["gtk"];
+      };
+      hyprland = {
+        default = ["hyprland" "gtk"];
+      };
+    };
   };
 
   programs.nix-ld.enable = true;
