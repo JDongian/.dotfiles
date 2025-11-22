@@ -43,7 +43,6 @@
     nodejs_22
     # nodejs_23
     nix-ld  # dirty
-    # pkgs.code-cursor
     poppler-utils
     postgresql
     # prisma
@@ -125,7 +124,7 @@
     lshw
     networkmanagerapplet
     openssl
-    papirus-icon-theme # not really used by anything, but dolphin
+    # papirus-icon-theme # not really used by anything, but dolphin
     pasystray
     pavucontrol
     # python311Full  # Removed: has been deprecated in nixos-unstable
