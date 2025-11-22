@@ -57,7 +57,11 @@
           # Configure Home Manager for user joshua
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.joshua = import ./home.nix;
+          home-manager.users.joshua = { config, pkgs, lib, ... }: {
+            imports = [ ./home.nix ];
+            # Tile-specific monitor config (1920x1080)
+            home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/tile-monitor.conf;
+          };
         }
       ];
     };
@@ -75,7 +79,11 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.joshua = import ./home.nix;
+          home-manager.users.joshua = { config, pkgs, lib, ... }: {
+            imports = [ ./home.nix ];
+            # Gravel-specific monitor config (2560x1440)
+            home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/gravel-monitor.conf;
+          };
         }
       ];
     };

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   # Home Manager basic configuration
@@ -31,17 +31,6 @@
 
   # Hyprlock config (no native Home Manager module yet)
   home.file.".config/hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
-
-  # Host-specific monitor configuration
-  home.file.".config/hypr/monitor.conf".source =
-    if config.home.homeDirectory == "/home/joshua" then
-      let
-        hostname = builtins.readFile /etc/hostname;
-        hostnameStripped = builtins.replaceStrings ["\n"] [""] hostname;
-      in
-        ./dotfiles/hypr/hosts + "/${hostnameStripped}-monitor.conf"
-    else
-      ./dotfiles/hypr/hosts/tile-monitor.conf;
 
   # =========================================================================
   # Waybar
