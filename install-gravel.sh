@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+curl -fsSL https://raw.githubusercontent.com/JDongian/.dotfiles/master/disko.nix -o /tmp/disko.nix
 sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- \
     --mode disko \
-    https://raw.githubusercontent.com/JDongian/.dotfiles/master/disko.nix
+    /tmp/disko.nix
 
 sudo nixos-generate-config --root /mnt --no-filesystems
 
