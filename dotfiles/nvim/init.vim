@@ -59,6 +59,6 @@ augroup bad_whitespace
   autocmd!
   autocmd BufWinEnter *
         \ if &buftype == '' && &modifiable |
-        \   match BadWhitespace /\s\+$/\|^\t\+/ |
+        \   match BadWhitespace /\s\+$\|^\t\+/ |
         \ endif
 augroup END
