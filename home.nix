@@ -139,6 +139,35 @@
   programs.fuzzel.enable = true;
 
   # =========================================================================
+  # Font Configuration
+  # =========================================================================
+  fonts.fontconfig = {
+    enable = true;
+
+    # Disable antialiasing for gohufont to prevent scaling/blurring at 2K
+    localConf = ''
+      <?xml version="1.0"?>
+      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+      <fontconfig>
+        <match target="font">
+          <test name="family" compare="eq">
+            <string>gohufont</string>
+          </test>
+          <edit name="antialias" mode="assign">
+            <bool>false</bool>
+          </edit>
+          <edit name="hinting" mode="assign">
+            <bool>true</bool>
+          </edit>
+          <edit name="hintstyle" mode="assign">
+            <const>hintfull</const>
+          </edit>
+        </match>
+      </fontconfig>
+    '';
+  };
+
+  # =========================================================================
   # Misc Programs
   # =========================================================================
   programs.direnv = {
