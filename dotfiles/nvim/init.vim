@@ -26,12 +26,6 @@ augroup END
 " ---------- Tabs / windows ----------
 nnoremap nh :noh<CR>
 nnoremap <C-t>  :tabnew<CR>
-nnoremap te     :tabedit<Space>
-nnoremap tl     :tabnext<CR>
-nnoremap th     :tabprev<CR>
-nnoremap tL     :tablast<CR>
-nnoremap tm     :tabm<Space>
-nnoremap td     :tabclose<CR>
 
 " Reselect visual block after indent/dedent
 vnoremap < <gv
