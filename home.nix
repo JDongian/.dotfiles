@@ -141,31 +141,30 @@
   # =========================================================================
   # Font Configuration
   # =========================================================================
-  fonts.fontconfig = {
-    enable = true;
+  fonts.fontconfig.enable = true;
 
-    # Disable antialiasing for gohufont to prevent scaling/blurring at 2K
-    localConf = ''
-      <?xml version="1.0"?>
-      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-      <fontconfig>
-        <match target="font">
-          <test name="family" compare="eq">
-            <string>gohufont</string>
-          </test>
-          <edit name="antialias" mode="assign">
-            <bool>false</bool>
-          </edit>
-          <edit name="hinting" mode="assign">
-            <bool>true</bool>
-          </edit>
-          <edit name="hintstyle" mode="assign">
-            <const>hintfull</const>
-          </edit>
-        </match>
-      </fontconfig>
-    '';
-  };
+  # Disable antialiasing for gohufont to prevent scaling/blurring at 2K
+  xdg.configFile."fontconfig/conf.d/75-disable-gohufont-antialiasing.conf".text = ''
+    <?xml version="1.0"?>
+    <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+    <fontconfig>
+      <description>Disable anti-aliasing for gohufont bitmap font</description>
+      <match target="font">
+        <test name="family" compare="eq">
+          <string>gohufont</string>
+        </test>
+        <edit name="antialias" mode="assign">
+          <bool>false</bool>
+        </edit>
+        <edit name="hinting" mode="assign">
+          <bool>true</bool>
+        </edit>
+        <edit name="hintstyle" mode="assign">
+          <const>hintfull</const>
+        </edit>
+      </match>
+    </fontconfig>
+  '';
 
   # =========================================================================
   # Misc Programs
