@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-sudo nix run github:nix-community/disko -- \
+sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- \
     --mode disko \
     --flake github:JDongian/.dotfiles#gravel
 
