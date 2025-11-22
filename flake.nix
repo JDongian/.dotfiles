@@ -34,6 +34,10 @@
       url = "github:nix-community/home-manager";  # Match nixpkgs version
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs = { self, nixpkgs, ... }@inputs: let
     system = "x86_64-linux";
@@ -51,6 +55,24 @@
         # {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
         {
           # Configure Home Manager for user joshua
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.users.joshua = import ./home.nix;
+        }
+      ];
+    };
+
+    # X1 Carbon configuration
+    nixosConfigurations.gravel = nixpkgs.lib.nixosSystem {
+      specialArgs = {
+        inherit inputs;
+        inherit system;
+      };
+      modules = [
+        inputs.disko.nixosModules.disko
+        ./hosts/gravel
+        inputs.home-manager.nixosModules.default
+        {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.users.joshua = import ./home.nix;
