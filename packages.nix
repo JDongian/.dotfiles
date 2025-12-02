@@ -33,6 +33,7 @@
     android-tools
     clang
     code-cursor
+    claude-code
     deno
     dwdiff
     gcc
@@ -77,6 +78,7 @@
     inkscape
     pinta
     tesseract
+    obs-studio
     vlc
 
     # =========================================================================

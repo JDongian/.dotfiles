@@ -20,8 +20,11 @@
   # https://nixos.wiki/wiki/Laptop
   powerManagement.enable = true;
   # https://nixos.wiki/wiki/Hibernation
-  # boot.kernelParams = ["resume_offset=73617408"];
-  # boot.resumeDevice = "/dev/disk/by-uuid/c3645c55-a6db-46e9-8866-f00fece29064";
+  # To find resume_offset: sudo filefrag -v /var/lib/swapfile | head -20
+  # (use the first physical_offset value)
+  boot.kernelParams = ["resume_offset=38834176"];
+  # To find UUID: sudo blkid /dev/mapper/cryptroot
+  boot.resumeDevice = "/dev/disk/by-uuid/dc99dc0b-5d40-49b7-967d-a2c484ae867e";
   swapDevices = [
     {
       device = "/var/lib/swapfile";
