@@ -118,7 +118,8 @@
   services.hypridle.enable = true;
   programs.hyprlock.enable = true;
 
-  programs.waybar.enable = true;
+  # Waybar started from Hyprland config instead
+  # programs.waybar.enable = true;
 
 
   console.keyMap = "dvorak";
