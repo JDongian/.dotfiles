@@ -17,6 +17,9 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
+    plugins = with pkgs.vimPlugins; [
+      goyo-vim
+    ];
     extraConfig = builtins.readFile ./dotfiles/nvim/init.vim;
   };
 

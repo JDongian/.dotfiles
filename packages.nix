@@ -30,6 +30,7 @@
     # =========================================================================
     # Development Tools
     # =========================================================================
+    zip
     android-tools
     clang
     code-cursor
@@ -68,6 +69,7 @@
     # =========================================================================
     # Media & Creative
     # =========================================================================
+    kdePackages.kolourpaint
     audacity
     feh
     ffmpeg-full
@@ -119,6 +121,7 @@
     fprintd
     fzf
     gnome-keyring
+    seahorse  # GUI for managing gnome-keyring
     htop
     ibus
     killall

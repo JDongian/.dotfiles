@@ -174,17 +174,11 @@
     PRISMA_ENGINES_DIRECTORY = "${pkgs.prisma-engines}/bin";
   };
 
-  # # services.gnome3.gnome-keyring.enable = true;
-  # services.gnome-keyring = {
-  #   enable = true;
-  #   # Enable support for managing SSH keys
-  #   ssh = true;
-  #   # Enable support for managing GPG keys
-  #   gpg = true;
-  # };
+  # Enable gnome-keyring service
+  # services.gnome.gnome-keyring.enable = true;
 
-  # Make sure your PAM configuration loads the keyring in your desktop
-  # security.pam.services.login.extraSessionModules = [ "gnome-keyring" ];
+  # Enable gnome-keyring for greetd PAM (unlocks keyring on login)
+  # security.pam.services.greetd.enableGnomeKeyring = true;
 
   programs.starship.enable = true;
 
