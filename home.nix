@@ -45,8 +45,8 @@
   home.file.".config/waybar/config".source = ./dotfiles/waybar/config.jsonc;
   home.file.".config/waybar/style.css".source = ./dotfiles/waybar/style.css;
 
-  # Enable waybar service
-  programs.waybar.enable = true;
+  # Enable waybar package (but not the systemd service, since we start it from Hyprland)
+  programs.waybar.enable = false;
 
   # =========================================================================
   # Tmux
@@ -186,9 +186,9 @@
   # =========================================================================
   home.sessionVariables = {
     XCURSOR_THEME = "McMojave";
-    XCURSOR_SIZE = "24";
+    XCURSOR_SIZE = "48";
     HYPRCURSOR_THEME = "McMojave";
-    HYPRCURSOR_SIZE = "24";
+    HYPRCURSOR_SIZE = "48";
   };
 
   # =========================================================================
