@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   # Home Manager basic configuration
@@ -195,6 +195,7 @@
   # User Packages
   # =========================================================================
   home.packages = with pkgs; [
-    # Add user-specific packages here if needed
+    # McMojave hyprcursor theme
+    inputs.mcmojave-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }

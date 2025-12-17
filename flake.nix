@@ -38,6 +38,7 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    mcmojave-hyprcursor.url = "github:libadoxon/mcmojave-hyprcursor";
   };
   outputs = { self, nixpkgs, ... }@inputs: let
     system = "x86_64-linux";
@@ -57,6 +58,7 @@
           # Configure Home Manager for user joshua
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.users.joshua = { config, pkgs, lib, ... }: {
             imports = [ ./home.nix ];
             # Tile-specific monitor config (1920x1080)
@@ -79,6 +81,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.users.joshua = { config, pkgs, lib, ... }: {
             imports = [ ./home.nix ];
             # Gravel-specific monitor config (2560x1440)
