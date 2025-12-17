@@ -32,6 +32,9 @@
   # Hyprlock config (no native Home Manager module yet)
   home.file.".config/hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
 
+  # Hypridle config (no native Home Manager module yet)
+  home.file.".config/hypr/hypridle.conf".source = ./dotfiles/hypr/hypridle.conf;
+
   # =========================================================================
   # Waybar
   # =========================================================================
