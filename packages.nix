@@ -55,6 +55,8 @@
     tmux
     vsh  # hashicorp vault sh
     # hcp  # hashicorp
+    jdk25
+    gradle
 
     # =========================================================================
     # Desktop/GUI Applications
