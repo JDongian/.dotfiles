@@ -51,12 +51,22 @@
     prisma-engines
     python3
     python3Packages.pip
+
+    python313
+    python313Packages.numpy
+    python313Packages.opencv4
+    python313Packages.pip
+    python313Packages.virtualenv
+
     rubberband
     tmux
     vsh  # hashicorp vault sh
     # hcp  # hashicorp
     jdk25
     gradle
+
+    grim
+    ydotool
 
     # =========================================================================
     # Desktop/GUI Applications
