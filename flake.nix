@@ -39,6 +39,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     mcmojave-hyprcursor.url = "github:libadoxon/mcmojave-hyprcursor";
+    claude-code-overlay = {
+      url = "github:ryoppippi/claude-code-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs = { self, nixpkgs, ... }@inputs: let
     system = "x86_64-linux";
@@ -54,6 +58,11 @@
         inputs.home-manager.nixosModules.default
         # hyprpanel overlay removed - hyprpanel is now available in nixpkgs
         # {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
+        {
+          nixpkgs.overlays = [
+            inputs.claude-code-overlay.overlays.default
+          ];
+        }
         {
           # Configure Home Manager for user joshua
           home-manager.useGlobalPkgs = true;
@@ -78,6 +87,11 @@
         inputs.disko.nixosModules.disko
         ./hosts/gravel
         inputs.home-manager.nixosModules.default
+        {
+          nixpkgs.overlays = [
+            inputs.claude-code-overlay.overlays.default
+          ];
+        }
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;

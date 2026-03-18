@@ -143,6 +143,7 @@
     lshw
     networkmanagerapplet
     openssl
+    rclone
     # papirus-icon-theme # not really used by anything, but dolphin
     pasystray
     pavucontrol
