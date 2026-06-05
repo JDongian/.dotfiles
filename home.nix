@@ -17,6 +17,8 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
+    withRuby = true;
+    withPython3 = true;
     plugins = with pkgs.vimPlugins; [
       goyo-vim
     ];
@@ -28,6 +30,9 @@
   # =========================================================================
   wayland.windowManager.hyprland = {
     enable = true;
+    # NOTE: there is no `configType` option in the HM hyprland module — adding
+    # one breaks evaluation. `extraConfig` is already raw hyprlang text, and
+    # `settings = {}` means HM generates nothing of its own to clash with it.
     settings = {};
     extraConfig = builtins.readFile ./dotfiles/hypr/hyprland.conf;
   };
@@ -37,6 +42,24 @@
 
   # Hypridle config (no native Home Manager module yet)
   home.file.".config/hypr/hypridle.conf".source = ./dotfiles/hypr/hypridle.conf;
+
+  # hyprlock as a managed user service so a crashed locker auto-respawns and
+  # reattaches to the surviving session-lock surface (allow_session_lock_restore).
+  # Triggered by hypridle's lock_cmd; not auto-started at login.
+  systemd.user.services.hyprlock = {
+    Unit = {
+      Description = "Hyprlock screen locker";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.hyprlock}/bin/hyprlock";
+      Restart = "on-failure";
+      RestartSec = 1;
+      StartLimitBurst = 10;
+    };
+  };
 
   # =========================================================================
   # Waybar
@@ -186,9 +209,17 @@
   # =========================================================================
   home.sessionVariables = {
     XCURSOR_THEME = "McMojave";
-    XCURSOR_SIZE = "48";
+    XCURSOR_SIZE = "24";
     HYPRCURSOR_THEME = "McMojave";
-    HYPRCURSOR_SIZE = "48";
+    HYPRCURSOR_SIZE = "24";
+
+    # Claude Code (and other Node CLIs using the `open` package) launch a
+    # browser via $BROWSER, NOT xdg-open. With $BROWSER unset and no
+    # x-www-browser/www-browser/sensible-browser on PATH, the fallback chain
+    # is empty and browser-based OAuth logins silently fail — even though
+    # plain `xdg-open` works. Point $BROWSER at xdg-open so it honors the
+    # same default-browser (brave-browser.desktop) setting that already works.
+    BROWSER = "xdg-open";
   };
 
   # =========================================================================

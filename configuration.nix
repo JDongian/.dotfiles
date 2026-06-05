@@ -17,42 +17,34 @@
   boot.loader.systemd-boot.consoleMode = "keep";
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # https://nixos.wiki/wiki/Laptop
-  powerManagement.enable = true;
-  # https://nixos.wiki/wiki/Hibernation
-  # To find resume_offset: sudo filefrag -v /var/lib/swapfile | head -20
-  # (use the first physical_offset value)
-  boot.kernelParams = ["resume_offset=38834176"];
-  # To find UUID: sudo blkid /dev/mapper/cryptroot
-  boot.resumeDevice = "/dev/disk/by-uuid/dc99dc0b-5d40-49b7-967d-a2c484ae867e";
-  swapDevices = [
-    {
-      device = "/var/lib/swapfile";
-      size = 15779; # MBs
-    }
-  ];
+  # NOTE: Power management (powerManagement.enable, swapDevices, hibernation
+  # resume, lid/suspend, the hibernate-on-low-battery timer, fprintd-resume
+  # hook, and the MFi/fingerprint udev rules) moved to hosts/tile/power.nix —
+  # one central place for the whole subsystem (2026-06-04).
 
-  # Renamed in nixos-unstable: lidSwitch → settings.Login.HandleLidSwitch
-  services.logind.settings.Login.HandleLidSwitch = "suspend";
+  # TODO (deferred, "B3"): Secure Boot via lanzaboote + TPM2 LUKS auto-unlock.
+  # Goal: replace the LUKS passphrase prompt at boot with TPM2-sealed unlock,
+  # leaving only the user login password. Requires, in order:
+  #   1. Add nix-community/lanzaboote as a flake input; generate signing keys
+  #      and enroll them in the BIOS Secure Boot store (BIOS setup mode).
+  #   2. Switch boot.loader.systemd-boot.enable → boot.lanzaboote.enable.
+  #   3. Reboot, enable Secure Boot in firmware, verify `bootctl status`
+  #      shows "Secure Boot: enabled (user)".
+  #   4. systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 <luks-device>
+  #      for both rootfs and swap LUKS volumes; keep an enrolled passphrase
+  #      slot as recovery.
+  # Why deferred: TPM2 unlock without Secure Boot is a real security
+  # regression (rogue-OS / filesystem-confusion attack — see oddlama.org
+  # write-up). Doing it right requires lanzaboote, which is a separate
+  # multi-step project. NOTE: this needs boot.initrd.systemd.enable, which is
+  # deliberately NOT set — turning it on (2026-05-17) silently broke
+  # hibernation resume (LUKS-swap dependency ordering in the systemd initrd;
+  # see hosts/tile/power.nix). If Secure Boot work re-enables it, the resume
+  # path must be fixed first.
 
-  systemd.services.hibernate-on-low-battery = {
-    description = "Hibernate when battery is critically low";
-    after = [ "multi-user.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c 'if [ $(cat /sys/class/power_supply/BAT*/capacity) -le 5 ] && [ $(cat /sys/class/power_supply/AC*/online) -eq 0 ]; then /run/current-system/sw/bin/systemctl hibernate; fi'";
-    };
-  };
-
-  systemd.timers.hibernate-on-low-battery = {
-    description = "Check battery percentage and hibernate if needed";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnUnitActiveSec = "1min"; # Check every minute
-      Unit = "hibernate-on-low-battery.service";
-    };
-  };
+  # NOTE: lid/suspend-then-hibernate, HibernateDelay, the MFi + fingerprint
+  # udev rules, and the fprintd-resume hook all moved to hosts/tile/power.nix
+  # (2026-06-04). See that module for the full power-management picture.
 
   services.udisks2.enable = true;
 
@@ -109,7 +101,7 @@
       default_session = {
         user = "joshua";
         # Renamed: greetd.tuigreet → tuigreet
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd Hyprland";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
       };
     };
   };
