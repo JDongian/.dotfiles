@@ -15,6 +15,9 @@ window#waybar {
 #workspaces button.active {
 	color: #268bd2;
 }
+#workspaces button.urgent {
+	color: #dc322f;
+}
 
 #memory,
 #cpu,

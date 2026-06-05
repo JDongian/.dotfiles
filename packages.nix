@@ -1,5 +1,26 @@
 { config, pkgs, lib, ... }:
 
+let
+  two-slice = pkgs.stdenvNoCC.mkDerivation {
+    pname = "two-slice-font";
+    version = "1.0";
+    src = pkgs.fetchurl {
+      url = "https://joefatula.com/assets/Two%20Slice.ttf";
+      name = "two-slice.ttf";
+      hash = "sha256-OCoIOLhkXGPP1RRS3biK0SOXfpY+l25DyAM/kwRmZEs=";
+    };
+    dontUnpack = true;
+    installPhase = ''
+      install -Dm644 "$src" "$out/share/fonts/truetype/Two Slice.ttf"
+    '';
+    meta = {
+      description = "2px-tall pixel font by Joe Fatula";
+      homepage = "https://joefatula.com/twoslice.html";
+      license = lib.licenses.cc-by-sa-40;
+      platforms = lib.platforms.all;
+    };
+  };
+in
 {
   # =========================================================================
   # Fonts
@@ -11,6 +32,7 @@
     google-fonts
     material-icons
     terminus_font
+    two-slice
   ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
 
   # =========================================================================
@@ -30,6 +52,8 @@
     # =========================================================================
     # Development Tools
     # =========================================================================
+    sox
+    gh
     zip
     android-tools
     clang
@@ -74,9 +98,11 @@
     brave
     evince
     google-chrome
+    libreoffice-fresh
     nautilus
     signal-desktop
     zoom-us
+    shotcut
 
     wev
 
@@ -138,6 +164,7 @@
     seahorse  # GUI for managing gnome-keyring
     htop
     ibus
+    inotify-tools
     killall
     lm_sensors
     lshw

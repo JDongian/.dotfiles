@@ -60,6 +60,11 @@
         # {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
         {
           nixpkgs.overlays = [
+            # claude-code from the overlay's default output (currently 2.1.76).
+            # To bump: `nix flake update claude-code-overlay`, which moves the
+            # input revision so `.default` tracks a newer release. The pinned
+            # revision does NOT expose per-version attrs (e.g. ."2.1.161"),
+            # so don't reference them — it fails eval with "attribute missing".
             inputs.claude-code-overlay.overlays.default
           ];
         }
@@ -89,6 +94,8 @@
         inputs.home-manager.nixosModules.default
         {
           nixpkgs.overlays = [
+            # claude-code from the overlay default; keep in sync with the tile
+            # host above. Bump via `nix flake update claude-code-overlay`.
             inputs.claude-code-overlay.overlays.default
           ];
         }
