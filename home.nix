@@ -162,10 +162,21 @@
   programs.foot.enable = true;
 
   # =========================================================================
-  # Fuzzel Launcher
+  # Brave — force XWayland to restore middle-click (primary-selection) paste
   # =========================================================================
-  home.file.".config/fuzzel/fuzzel.ini".source = ./dotfiles/fuzzel/fuzzel.ini;
-  programs.fuzzel.enable = true;
+  # Symptom (2026-06): selecting text in foot and middle-clicking into Brave
+  # stopped pasting (foot->foot still works). Cause: a Brave update started
+  # auto-running under native Wayland (Ozone). Chromium-family browsers do not
+  # implement primary-selection PASTE under native Wayland, so middle-click
+  # into Brave does nothing; under XWayland, XWayland bridges X11 PRIMARY and
+  # it works. We don't set NIXOS_OZONE_WL, so the Nix wrapper passes no
+  # --ozone-platform flag and Brave picks Wayland on its own — pin it to x11.
+  # Brave reads ~/.config/brave-flags.conf at launch (Chromium flags-file
+  # convention). To go back to native Wayland later, delete this / set
+  # --ozone-platform=wayland (and accept middle-paste stays broken upstream).
+  home.file.".config/brave-flags.conf".text = ''
+    --ozone-platform=x11
+  '';
 
   # =========================================================================
   # Font Configuration
