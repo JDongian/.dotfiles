@@ -182,6 +182,9 @@
   home.file.".config/brave-flags.conf".text = ''
     --ozone-platform=x11
   '';
+  home.file.".config/chrome-flags.conf".text = ''
+    --ozone-platform=x11
+  '';
 
   # =========================================================================
   # Font Configuration

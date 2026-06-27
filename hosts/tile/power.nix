@@ -35,9 +35,12 @@
   # HOW RESUME WORKS HERE (evidenced from the journal, boots Jan–Jun 2026):
   # resume is the CLASSIC script-initrd path. NixOS emits a `resume=` kernel
   # param from boot.resumeDevice and the script initrd resumes from it.
-  # Hibernate writes to the encrypted swap PARTITION (luks ... a6b327e9, prio
-  # -2) ahead of the swapfile (prio -3), and resumeDevice below names that same
-  # partition. This path resumed reliably from March through 2026-05-06.
+  # Hibernate writes to the encrypted swap PARTITION (luks ... a6b327e9).
+  # The partition IS listed as a swapDevice (priority 0, lowest) so the
+  # kernel can write hibernate images to it, but normal paging goes to the
+  # swapfile (priority 10) first. This keeps the partition empty for hibernate.
+  # resumeDevice below names the same partition.
+  # This path resumed reliably from March through 2026-05-06.
   #
   # DO NOT set boot.initrd.systemd.enable = true. When it was turned on
   # (2026-05-17) resume SILENTLY BROKE: with systemd-initrd, NixOS stops
@@ -63,14 +66,20 @@
   # is absent — so it would have cold-booted. (It only "worked" historically on
   # boots that happened to carry resume=a6b327e9 or a bare resume_offset, not
   # dc99dc0b.) No resume_offset: offsets apply only to swapfile targets, and the
-  # image lands on the partition (prio -2) ahead of the swapfile (prio -3), so
-  # an offset here is meaningless and was the stale 38834176 (real swapfile
-  # first extent is 73617408, irrelevant to a partition resume).
+  # image lands on the partition (low-priority swap device kept empty for
+  # hibernate), so an offset is meaningless. No resume_offset needed.
   boot.resumeDevice = "/dev/disk/by-uuid/a6b327e9-d898-49a9-8858-9891cc770e82";
   swapDevices = [
     {
+      # Hibernate target — must stay swapon'd for the kernel to write images.
+      # Priority 0 (lowest used) so normal paging fills the swapfile first.
+      device = "/dev/disk/by-uuid/a6b327e9-d898-49a9-8858-9891cc770e82";
+      priority = 0;
+    }
+    {
       device = "/var/lib/swapfile";
       size = 15779; # MBs
+      priority = 10; # higher = paged to first, keeping the partition free
     }
   ];
 
@@ -85,18 +94,26 @@
 
   # Hibernate when the battery is critically low and on battery power. This is
   # the actual hibernate trigger in the March-anchored setup (the lid only
-  # suspends). KNOWN LIMITATION (journal 2026-06-03): this timer is frozen
-  # while the system is in S3, so a lid-closed laptop that drains entirely
-  # while asleep never fires it and loses the session. suspend-then-hibernate
-  # was the attempted fix for that, but it depends on a resume path that
-  # doesn't work here — revisit only after resume is verified (see note above).
+  # suspends). If hibernate fails (e.g. swap space issue), falls back to
+  # suspend so the machine at least stops draining battery.
+  #
+  # KNOWN LIMITATION: this timer is frozen while the system is in S3, so a
+  # lid-closed laptop that drains entirely while asleep never fires it.
+  # suspend-then-hibernate would fix that — revisit once resume is verified.
+  #
+  # FIXED 2026-06-24: the swap partition had higher priority (-2) than the
+  # swapfile (-3), so the kernel paged into the partition first. Under memory
+  # pressure it filled up, and "systemctl hibernate" was rejected with "Not
+  # enough suitable swap space". Fix: partition priority 0 (lowest), swapfile
+  # priority 10 (highest) — paging fills the swapfile; partition stays empty.
+  # Fallback: if hibernate still fails, the script suspends instead of dying.
   systemd.services.hibernate-on-low-battery = {
     description = "Hibernate when battery is critically low";
     after = [ "multi-user.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c 'if [ $(cat /sys/class/power_supply/BAT*/capacity) -le 5 ] && [ $(cat /sys/class/power_supply/AC*/online) -eq 0 ]; then /run/current-system/sw/bin/systemctl hibernate; fi'";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'if [ $(cat /sys/class/power_supply/BAT*/capacity) -le 5 ] && [ $(cat /sys/class/power_supply/AC*/online) -eq 0 ]; then /run/current-system/sw/bin/systemctl hibernate || /run/current-system/sw/bin/systemctl suspend; fi'";
     };
   };
 

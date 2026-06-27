@@ -181,6 +181,12 @@
   # Enable rtkit for PipeWire real-time scheduling
   security.rtkit.enable = true;
 
+  # Audit logging for signal delivery (catch SIGTERM culprits)
+  security.auditd.enable = true;
+  security.audit.rules = [
+    "-a always,exit -F arch=b64 -S kill -S tkill -S tgkill -F a1=15 -k sigterm_track"
+  ];
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;

@@ -26,9 +26,9 @@
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
-  swapDevices =
-    [ { device = "/dev/disk/by-uuid/a6b327e9-d898-49a9-8858-9891cc770e82"; }
-    ];
+  # The swap PARTITION (a6b327e9) is declared in power.nix with low priority
+  # so it stays empty for hibernate images. Do not duplicate it here.
+  swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
