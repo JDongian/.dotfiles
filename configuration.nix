@@ -101,7 +101,17 @@
       default_session = {
         user = "joshua";
         # Renamed: greetd.tuigreet → tuigreet
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
+        # setsid on the compositor (via --cmd) makes start-hyprland its own
+        # session/process-group leader, so a group-directed signal — kill(0) /
+        # kill(-pgid) — from any app running *inside* the Hyprland session cannot
+        # escape upward and SIGTERM the compositor. On 2026-08-05 a Claude Code
+        # Bash-subprocess teardown (kill(0) + kill(-pgid)) sprayed the login
+        # session's process group, hit start-hyprland, and took the whole desktop
+        # down (clean SIGTERM, not a crash). See memory: hyprland_group_sigterm.
+        # --wait: setsid otherwise forks-and-returns immediately, which would make
+        # greetd think the session ended at once and relogin-loop; --wait blocks
+        # until start-hyprland actually exits, preserving normal session lifetime.
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd '${pkgs.util-linux}/bin/setsid --wait start-hyprland'";
       };
     };
   };

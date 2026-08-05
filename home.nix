@@ -228,9 +228,9 @@
   # =========================================================================
   home.sessionVariables = {
     XCURSOR_THEME = "McMojave";
-    XCURSOR_SIZE = "24";
+    XCURSOR_SIZE = "48";
     HYPRCURSOR_THEME = "McMojave";
-    HYPRCURSOR_SIZE = "24";
+    HYPRCURSOR_SIZE = "48";
 
     # Claude Code (and other Node CLIs using the `open` package) launch a
     # browser via $BROWSER, NOT xdg-open. With $BROWSER unset and no
