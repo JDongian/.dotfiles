@@ -48,6 +48,14 @@
 
   services.udisks2.enable = true;
 
+  # Firmware updates via LVFS/fwupd. Enabling this only makes the tooling
+  # available — it does NOT auto-apply anything. Check with:
+  #   fwupdmgr refresh          # pull the latest LVFS metadata
+  #   fwupdmgr get-updates      # list pending firmware (BIOS, TB, etc.)
+  #   fwupdmgr update           # apply — a deliberate, manual step
+  # The T490s (Lenovo 20NY) exposes UEFI/ME/Thunderbolt updates on LVFS.
+  services.fwupd.enable = true;
+
 
   # Networking
   # Note: hostname is now set in hosts/<hostname>/hardware.nix

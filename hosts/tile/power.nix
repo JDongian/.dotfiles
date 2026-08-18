@@ -126,24 +126,61 @@
     };
   };
 
-  # --- Post-resume fixup: fingerprint reader --------------------------------
-  # fprintd 1.94.5 + Synaptics 06cb:00bd leak /net/reactivated/Fprint/Device/N
-  # dbus objects across suspend cycles: libfprint sometimes misses the USB
-  # device-removed event when the kernel re-enumerates the sensor after
-  # resume, so fprintd's GetDefaultDevice (g_list_last in manager.c) may
-  # return a stale Device/N — breaking hyprlock fingerprint auth with
-  # "Device was already claimed". Restarting fprintd on resume clears
-  # the accumulated state. Debian #979143 tracks the same hardware.
+  # --- Fingerprint reader across suspend/resume -----------------------------
+  # fprintd 1.94.5 + Synaptics 06cb:00bd break hyprlock fingerprint auth across
+  # sleep in two ways: (a) libfprint sometimes misses the USB device-removed
+  # event when the sensor re-enumerates on resume, leaving a stale
+  # /net/reactivated/Fprint/Device/N that GetDefaultDevice (g_list_last in
+  # manager.c) then hands out — "Device was already claimed"; and (b) hyprlock
+  # survives sleep as ONE long-lived process and, on PrepareForSleep(false),
+  # gets exactly ONE shot at re-claim + re-start-verify. hyprlock has NO retry
+  # (upstream hyprlock #768/#577), so if that single claim fails the reader is
+  # dead until you type the password. Debian #979143 tracks the same hardware.
   #
-  # IMPORTANT (2026-06-05): this MUST bind to the real systemd sleep units, NOT
-  # "post-resume.target" — that target does not exist (LoadState=not-found), so
-  # the previous wantedBy/after=post-resume.target meant this service NEVER ran
-  # (confirmed: zero fprintd-resume entries in journal history). systemd runs
-  # systemd-suspend.service / systemd-hibernate.service / the hybrid variants
-  # for the whole sleep cycle; ordering After= them and pulling in via WantedBy=
-  # them makes this fire once on the way back up from any sleep type.
+  # PRIOR APPROACH (2026-06-05..08-18) restarted fprintd After= the sleep unit.
+  # That fired at the exact moment hyprlock was re-arming: fprintd went down
+  # mid-claim, hyprlock's one attempt failed silently, reader stayed dead. The
+  # journal shows the tell — healthy resumes log "claimed device / started
+  # verifying"; raced resumes are MISSING those two lines. So the old fixup was
+  # itself causing a share of the failures it meant to fix.
+  #
+  # NEW APPROACH — don't race, be tolerant (verified live 2026-08-18):
+  #   * fprintd is Type=dbus / BusName=net.reactivated.Fprint with a D-Bus
+  #     system-service file, i.e. it AUTO-ACTIVATES on first client contact.
+  #     Confirmed: from `inactive`, a single `fprintd-list` call flips it to
+  #     `active`. So we don't need it running — hyprlock's own claim spawns it.
+  #   * fprintd-presleep: STOP fprintd on the way INTO any sleep, so no stale
+  #     instance can survive the USB re-enumeration. Nothing to race on resume.
+  #   * fprintd-resume: on the way back up, POLL — kick a fresh activation and
+  #     confirm the device is genuinely healthy (exactly one Device, no
+  #     "(deleted)" usb fds), retrying for ~10s. Whether hyprlock's claim lands
+  #     before or after this, it meets a clean, claimable fprintd. "Keep
+  #     trying" replaces "restart once and hope the timing is right."
+  systemd.services.fprintd-presleep = {
+    description = "Stop fprintd before sleep so no stale device survives resume";
+    wantedBy = [
+      "systemd-suspend.service"
+      "systemd-hibernate.service"
+      "systemd-hybrid-sleep.service"
+      "systemd-suspend-then-hibernate.service"
+    ];
+    before = [
+      "systemd-suspend.service"
+      "systemd-hibernate.service"
+      "systemd-hybrid-sleep.service"
+      "systemd-suspend-then-hibernate.service"
+    ];
+    serviceConfig = {
+      Type = "oneshot";
+      # `stop` is a no-op if it is already inactive (the common case, since it
+      # is D-Bus-activated and idles off). --no-block would let sleep proceed
+      # before the stop completes, so stay blocking here.
+      ExecStart = "${pkgs.systemd}/bin/systemctl stop fprintd.service";
+    };
+  };
+
   systemd.services.fprintd-resume = {
-    description = "Restart fprintd after resume to clear stale device state";
+    description = "Poll fprintd back to a healthy claimable state after resume";
     wantedBy = [
       "systemd-suspend.service"
       "systemd-hibernate.service"
@@ -158,7 +195,44 @@
     ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.systemd}/bin/systemctl restart fprintd.service";
+      # Restart fprintd ONCE up front to drop any instance that survived the
+      # USB re-enumeration with a stale Device/N, then POLL for health without
+      # hammering it: each round just triggers D-Bus (re)activation via a
+      # cheap `fprintd-list` client call — NOT another `systemctl restart`,
+      # which trips systemd's StartLimit rate-limiter (learned the hard way:
+      # restarting in a tight loop fails with "start attempted too often").
+      # Healthy == exactly one "Device at ..." line AND no "(deleted)" usb fds
+      # lingering in the fprintd process. Up to ~10s, then leave it to hyprlock's
+      # own claim to re-activate a clean instance on demand.
+      #
+      # PATH must include gnugrep + coreutils explicitly — writeShellScript does
+      # not inherit a login PATH, and procps does NOT provide grep.
+      ExecStart = pkgs.writeShellScript "fprintd-resume" ''
+        set -u
+        PATH=${pkgs.systemd}/bin:${pkgs.fprintd}/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin:${pkgs.procps}/bin
+        # Clear any StartLimit state from prior churn, then one clean restart.
+        systemctl reset-failed fprintd.service 2>/dev/null || true
+        systemctl restart fprintd.service || true
+        for i in $(seq 1 20); do
+          sleep 0.5
+          # `fprintd-list` is itself a D-Bus client, so it re-activates fprintd
+          # if it idled off — this is the "keep trying" without a restart storm.
+          out=$(fprintd-list joshua 2>/dev/null || true)
+          ndev=$(printf '%s\n' "$out" | grep -c 'Device at' || true)
+          pid=$(pidof fprintd 2>/dev/null || true)
+          zombies=0
+          if [ -n "$pid" ]; then
+            zombies=$(ls -l /proc/"$pid"/fd/ 2>/dev/null | grep -c 'usb.*(deleted)' || true)
+          fi
+          if [ "$ndev" = "1" ] && [ "$zombies" = "0" ]; then
+            echo "fprintd healthy after $i poll(s): 1 device, no zombie fds"
+            exit 0
+          fi
+          echo "poll $i: ndev=$ndev zombies=$zombies — retrying"
+        done
+        echo "fprintd not confirmed healthy after 20 polls; leaving to on-demand activation"
+        exit 0
+      '';
     };
   };
 

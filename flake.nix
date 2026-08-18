@@ -60,7 +60,10 @@
         # {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
         {
           nixpkgs.overlays = [
-            # claude-code from the overlay's default output (currently 2.1.76).
+            # claude-code from the overlay's default output (currently 2.1.222).
+            # This is the SINGLE source of truth for claude — the old npm/nvm
+            # global (~/.nvm/.../@anthropic-ai/claude-code) was removed on
+            # 2026-08-05 because it shadowed this on PATH and drifted independently.
             # To bump: `nix flake update claude-code-overlay`, which moves the
             # input revision so `.default` tracks a newer release. The pinned
             # revision does NOT expose per-version attrs (e.g. ."2.1.161"),

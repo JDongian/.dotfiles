@@ -43,6 +43,26 @@
   # Hypridle config (no native Home Manager module yet)
   home.file.".config/hypr/hypridle.conf".source = ./dotfiles/hypr/hypridle.conf;
 
+  # Lock-screen wallpapers: the four frames of the macOS "Tahoe (Dynamic)"
+  # desktop, extracted from the Apple HEIC (one 6016x3384 container holding
+  # night/morning/day/evening; its 5th frame is a byte-identical copy of the
+  # night bookend that makes Apple's cycle loop, so it is dropped). Downscaled
+  # to 3840x2160 — exact 16:9 for the 1920x1080 eDP panel with headroom for
+  # fractional scaling.
+  home.file.".local/share/wallpapers/tahoe" = {
+    source = ./wallpapers/tahoe;
+    recursive = true;
+  };
+
+  # Picks the variant matching the current hour and repoints the
+  # `tahoe-current.jpg` symlink that hyprlock.conf's background points at.
+  # That link sits OUTSIDE the tahoe/ dir above, which is a read-only store
+  # symlink and cannot be written into.
+  home.file.".local/bin/lockscreen-wallpaper" = {
+    source = ./dotfiles/hypr/lockscreen-wallpaper.sh;
+    executable = true;
+  };
+
   # hyprlock as a managed user service so a crashed locker auto-respawns and
   # reattaches to the surviving session-lock surface (allow_session_lock_restore).
   # Triggered by hypridle's lock_cmd; not auto-started at login.
@@ -54,6 +74,14 @@
     };
     Service = {
       Type = "simple";
+      # Re-pick the time-of-day wallpaper on EVERY lock. This unit is the one
+      # choke point all lock paths funnel through — hypridle's 300s timeout,
+      # before_sleep_cmd on suspend, manual `loginctl lock-session`, and the
+      # after_sleep_cmd `try-restart` that re-arms the fingerprint reader on
+      # resume — so a laptop suspended at noon and opened at midnight comes
+      # back to the night variant. `-` prefix: a failure here must never block
+      # the locker from starting, since that would leave the session unlocked.
+      ExecStartPre = "-%h/.local/bin/lockscreen-wallpaper";
       ExecStart = "${pkgs.hyprlock}/bin/hyprlock";
       Restart = "on-failure";
       RestartSec = 1;
@@ -239,6 +267,17 @@
     # plain `xdg-open` works. Point $BROWSER at xdg-open so it honors the
     # same default-browser (brave-browser.desktop) setting that already works.
     BROWSER = "xdg-open";
+
+    # Claude Code is installed DECLARATIVELY via the claude-code-overlay
+    # (flake input; `nix flake update claude-code-overlay` to bump). Its
+    # built-in npm-global auto-updater must stay OFF, or it reinstalls a
+    # second copy into ~/.nvm/.../@anthropic-ai/claude-code and shadows the
+    # nix one on PATH (nvm bin sorts before /run/current-system/sw/bin) —
+    # the exact drift the flake.nix claude comment warns about. Observed
+    # 2026-08-18: after removing the nvm copy, the running claude's updater
+    # recreated it within seconds. This env var is the durable kill switch
+    # (survives ~/.claude.json rewrites). Bump claude through nix only.
+    DISABLE_AUTOUPDATER = "1";
   };
 
   # =========================================================================
