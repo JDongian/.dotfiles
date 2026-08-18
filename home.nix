@@ -30,9 +30,13 @@
   # =========================================================================
   wayland.windowManager.hyprland = {
     enable = true;
-    # NOTE: there is no `configType` option in the HM hyprland module — adding
-    # one breaks evaluation. `extraConfig` is already raw hyprlang text, and
-    # `settings = {}` means HM generates nothing of its own to clash with it.
+    # `extraConfig` is raw hyprlang text; `settings = {}` means HM generates
+    # nothing of its own to clash with it. configType must stay "hyprlang":
+    # HM's hyprland module now defaults configType from "hyprlang" to "lua" (for
+    # stateVersion >= 26.05), and letting it flip to "lua" would try to
+    # interpret our raw hyprlang extraConfig as Lua. Pinning it here both keeps
+    # current behavior and silences the HM default-change warning.
+    configType = "hyprlang";
     settings = {};
     extraConfig = builtins.readFile ./dotfiles/hypr/hyprland.conf;
   };

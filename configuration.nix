@@ -7,11 +7,6 @@
     ./packages.nix
   ];
 
-  # nixpkgs.overlays = [
-  #   (import ./overlays/code-cursor-latest.nix)
-  # ];
-
-
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 32;
   boot.loader.systemd-boot.consoleMode = "keep";
@@ -69,13 +64,6 @@
   # Experimental features
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  # services.libinput = {
-  #   enable = true;
-  #   touchpad = {
-  #     tapToClick = false;
-  #   };
-  # };
-
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = true;
   hardware.bluetooth.settings = {
@@ -84,8 +72,6 @@
     };
   };
 
-  # test this
-  # blueman-applet, blueman-manager
   services.blueman.enable = true;
 
   time.timeZone = "America/Los_Angeles";
@@ -133,29 +119,6 @@
 
 
   console.keyMap = "dvorak";
-
-  # Wallpaper management
-  # systemd.user.services.swww = {
-  #   description = "Swww Wallpaper Service";
-  #   serviceConfig = {
-  #     ExecStart = "${pkgs.swww}/bin/swww daemon";
-  #     Restart = "always";
-  #   };
-  # };
-
-  # gtk = {
-  #   enable = true;
-  #   theme = {
-  #     name = "TokyoNight";
-  #     package = pkgs.libsForQt5.breeze-gtk;
-  #   };
-  #   iconTheme = {
-  #     name = "Papirus-Dark";
-  #   };
-  #   gtk3 = {
-  #     extraConfig.gtk-application-prefer-dark-theme = true;
-  #   };
-  # };
 
   # Enable XDG portals for Wayland
   xdg.portal = {

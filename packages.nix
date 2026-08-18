@@ -89,7 +89,6 @@ in
     jdk25
     gradle
 
-    grim
     ydotool
 
     # =========================================================================
@@ -196,7 +195,9 @@ in
     # Documentation & Publishing
     # =========================================================================
     pandoc
-    texlive.combined.scheme-full
+    # texliveFull is the non-deprecated top-level scheme (same content as the
+    # old texlive.combined.scheme-full, which nixpkgs is removing in 27.05).
+    texliveFull
 
     # =========================================================================
     # Media Production

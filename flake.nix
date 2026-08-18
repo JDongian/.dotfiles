@@ -1,37 +1,11 @@
-# {
-#   description = "Nixos config flake";
-#   inputs = {
-#     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";  # stable release
-#     hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
-#     home-manager = {
-#       url = "github:nix-community/home-manager/release-24.11";  # Match nixpkgs version
-#       inputs.nixpkgs.follows = "nixpkgs";
-#     };
-#   };
-#   outputs = { self, nixpkgs, ... }@inputs: let
-#     system = "x86_64-linux";
-#   in {
-#     nixosConfigurations.default = nixpkgs.lib.nixosSystem {
-#       specialArgs = {
-#         inherit inputs;
-#         inherit system;
-#       };
-#       modules = [
-#         ./configuration.nix
-#         inputs.home-manager.nixosModules.default
-#       ];
-#     };
-#   };
-# }
-
 {
   description = "Nixos config flake";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # hyprpanel is now in nixpkgs, no need for overlay anymore
-    # hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
+    # Tracks home-manager master. nixpkgs is pinned via `follows` below so HM
+    # and the system share one nixpkgs; stateVersion stays 24.11 regardless.
     home-manager = {
-      url = "github:nix-community/home-manager";  # Match nixpkgs version
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     disko = {
@@ -56,14 +30,14 @@
       modules = [
         ./hosts/tile
         inputs.home-manager.nixosModules.default
-        # hyprpanel overlay removed - hyprpanel is now available in nixpkgs
-        # {nixpkgs.overlays = [inputs.hyprpanel.overlay];}
         {
           nixpkgs.overlays = [
-            # claude-code from the overlay's default output (currently 2.1.222).
-            # This is the SINGLE source of truth for claude — the old npm/nvm
-            # global (~/.nvm/.../@anthropic-ai/claude-code) was removed on
-            # 2026-08-05 because it shadowed this on PATH and drifted independently.
+            # claude-code from the overlay's default output. This is the SINGLE
+            # source of truth for claude. Its built-in npm-global auto-updater
+            # otherwise reinstalls a ~/.nvm/.../@anthropic-ai/claude-code copy
+            # that shadows this on PATH and drifts — disabled durably via
+            # DISABLE_AUTOUPDATER=1 in home.nix (home.sessionVariables). See the
+            # claude_nix_single_source note for the full story.
             # To bump: `nix flake update claude-code-overlay`, which moves the
             # input revision so `.default` tracks a newer release. The pinned
             # revision does NOT expose per-version attrs (e.g. ."2.1.161"),
