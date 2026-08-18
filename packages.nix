@@ -139,7 +139,7 @@ in
     playerctl
     pulseaudio  # Provides pactl and other PA utilities for PipeWire-Pulse
     slurp
-    swww
+    awww  # swww renamed to awww in nixpkgs; provides awww / awww-daemon
     waybar
     wayland-utils
     wdisplays

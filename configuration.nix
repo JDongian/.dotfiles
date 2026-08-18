@@ -55,10 +55,22 @@
   # Networking
   # Note: hostname is now set in hosts/<hostname>/hardware.nix
   networking.networkmanager.enable = true;
+  # Take DNS entirely away from NetworkManager and pin it to Cloudflare +
+  # Google via systemd-resolved. NM won't push DHCP-provided resolvers, so
+  # every lookup goes to 1.1.1.1 / 8.8.8.8 regardless of the network joined.
+  # `networking.nameservers` feeds resolved's global DNS= and, with NM DNS
+  # off, is the authoritative list (not just a fallback). `dnssec = false`
+  # keeps captive-portal / split-horizon networks from breaking on validation.
   networking.networkmanager.dns = lib.mkForce "none";
   # Don't wait for NetworkManager to finish starting
   systemd.services.NetworkManager-wait-online.enable = false;
-  services.resolved.enable = true;
+  services.resolved = {
+    enable = true;
+    settings.Resolve = {
+      DNSSEC = "false";
+      FallbackDNS = [ "1.1.1.1" "8.8.8.8" ];
+    };
+  };
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
   # Experimental features
@@ -161,12 +173,6 @@
   services.pulseaudio.enable = false;
   # Enable rtkit for PipeWire real-time scheduling
   security.rtkit.enable = true;
-
-  # Audit logging for signal delivery (catch SIGTERM culprits)
-  security.auditd.enable = true;
-  security.audit.rules = [
-    "-a always,exit -F arch=b64 -S kill -S tkill -S tgkill -F a1=15 -k sigterm_track"
-  ];
 
   services.pipewire = {
     enable = true;
