@@ -272,16 +272,11 @@
     # same default-browser (brave-browser.desktop) setting that already works.
     BROWSER = "xdg-open";
 
-    # Claude Code is installed DECLARATIVELY via the claude-code-overlay
-    # (flake input; `nix flake update claude-code-overlay` to bump). Its
-    # built-in npm-global auto-updater must stay OFF, or it reinstalls a
-    # second copy into ~/.nvm/.../@anthropic-ai/claude-code and shadows the
-    # nix one on PATH (nvm bin sorts before /run/current-system/sw/bin) —
-    # the exact drift the flake.nix claude comment warns about. Observed
-    # 2026-08-18: after removing the nvm copy, the running claude's updater
-    # recreated it within seconds. This env var is the durable kill switch
-    # (survives ~/.claude.json rewrites). Bump claude through nix only.
-    DISABLE_AUTOUPDATER = "1";
+    # NOTE: the Claude Code auto-updater kill switch (DISABLE_AUTOUPDATER +
+    # DISABLE_UPDATES) moved to configuration.nix `environment.variables` on
+    # 2026-08-19. Home Manager only covers joshua, but root has its own
+    # ~/.claude.json and root's claude self-updated into joshua's nvm dir.
+    # It has to be system-wide to hold. See the comment there.
   };
 
   # =========================================================================

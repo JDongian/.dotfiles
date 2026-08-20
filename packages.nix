@@ -68,7 +68,6 @@ in
     # nodejs_20
     nodejs_22
     # nodejs_23
-    nix-ld  # dirty
     poppler-utils
     postgresql
     # prisma

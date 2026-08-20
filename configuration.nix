@@ -158,6 +158,25 @@
 
   environment.variables = {
     PRISMA_ENGINES_DIRECTORY = "${pkgs.prisma-engines}/bin";
+
+    # Claude Code is installed DECLARATIVELY via the claude-code-overlay
+    # (see flake.nix). Its built-in auto-updater must stay OFF or it npm-installs
+    # a second copy into ~/.nvm/.../@anthropic-ai/claude-code that shadows the
+    # nix one on PATH. This USED to live in home.nix, but Home Manager only
+    # covers joshua -- root has its OWN ~/.claude.json with autoUpdates:true, and
+    # `sudo claude` inherits joshua's nvm PATH. On 2026-08-19 root's claude
+    # self-updated 2.1.217 -> 2.1.237 and wrote a ROOT-OWNED nvm copy, which
+    # broke `claude` at next login (npm wrapper with no native binary) and made
+    # `npm uninstall -g` fail with EACCES for joshua. Setting it here covers
+    # every user including root. Bump claude through nix only.
+    #
+    # DISABLE_AUTOUPDATER only stops the BACKGROUND check -- `claude update`
+    # still runs and would re-create the npm copy. DISABLE_UPDATES blocks both,
+    # which is what a nix-managed install wants. Both are set: the former is
+    # what the 2026-08-18 fix used and is still honored, the latter closes the
+    # manual-update hole.
+    DISABLE_AUTOUPDATER = "1";
+    DISABLE_UPDATES = "1";
   };
 
   # Enable gnome-keyring service
