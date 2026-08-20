@@ -144,10 +144,15 @@
         # Starship prompt (managed by Home Manager)
         eval "$(starship init bash)"
 
-        # NVM initialization
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+        # NOTE: nvm was removed on 2026-08-19. It prepended
+        # ~/.nvm/versions/node/<v>/bin to PATH in interactive shells only,
+        # which outranked /run/current-system/sw/bin and let ANY writer to
+        # that dir shadow a nix-managed binary. Claude Code's self-updater
+        # did exactly that twice (2026-08-18 as joshua, 2026-08-19 as root,
+        # leaving root-owned files in $HOME). Node now comes from nodejs_22
+        # in packages.nix, and per-project versions come from a devshell +
+        # direnv (programs.direnv below) -- e.g. ~/work/temi pins nodejs_24
+        # in its own flake.nix to match its .nvmrc.
       fi
     '';
 
