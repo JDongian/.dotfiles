@@ -92,6 +92,38 @@
   # above). Reverting to suspend + the timer restores the known-good setup.
   services.logind.settings.Login.HandleLidSwitch = "suspend";
 
+  # --- Lock-screen responsiveness (InhibitDelayMaxSec) -----------------------
+  # Cuts the visible "warning screen" gap between hyprlock starting and the
+  # lock surface actually painting.
+  #
+  # MEASURED 2026-08-24: hyprlock's start->"Locking session" gap is bimodal —
+  # either ~0-1s or EXACTLY 10s, never in between. A round 10s is a timeout,
+  # not contention. It decomposes into two 5s halves:
+  #
+  #   1. hypridle holds a logind DELAY inhibitor while running lock_cmd, and
+  #      hyprlock blocks on the session state hypridle is holding. logind
+  #      breaks the deadlock at InhibitDelayMaxSec (default 5s), logging
+  #      "Delay lock is active (PID .../hypridle) but inhibitor timeout is
+  #      reached." Every observed 10s lock has this line ~5s in; no 0s lock
+  #      does. That correlation is what identifies this half.
+  #   2. hyprlock then spends another ~5s in its own fprintd `Claim`, which
+  #      blocks its event loop BEFORE the first frame is drawn — upstream
+  #      hyprlock #543 ("Fingerprint can block hyprlock startup resulting in
+  #      the recovery screen flashing"), fixed by #544 but NOT in any release:
+  #      v0.9.6 (2026-07-18) is still latest and is what we run. So there is
+  #      no version bump available for this half.
+  #
+  # Dropping InhibitDelayMaxSec to 1s removes ~4s of half 1. It does NOT fix
+  # half 2 (that needs the upstream fix, or option C in the note below).
+  #
+  # WHY 1s IS SAFE: this cap only bounds how long logind waits for DELAY
+  # inhibitors before proceeding with sleep/lock. Our only delay inhibitor is
+  # hypridle's, whose before_sleep_cmd is a single `loginctl lock-session`
+  # that completes in milliseconds. It does NOT affect BLOCK inhibitors, and
+  # it does not shorten how long the fprintd-presleep/-resume services get
+  # (those are ordered systemd units, not inhibitors).
+  services.logind.settings.Login.InhibitDelayMaxSec = 1;
+
   # Hibernate when the battery is critically low and on battery power. This is
   # the actual hibernate trigger in the March-anchored setup (the lid only
   # suspends). If hibernate fails (e.g. swap space issue), falls back to
@@ -156,6 +188,71 @@
   #     "(deleted)" usb fds), retrying for ~10s. Whether hyprlock's claim lands
   #     before or after this, it meets a clean, claimable fprintd. "Keep
   #     trying" replaces "restart once and hope the timing is right."
+  # ===========================================================================
+  # DEFERRED — "option C": collapse the three hyprlock start paths into one
+  # ===========================================================================
+  # IMPLEMENT THIS IF the lock-screen gap is still objectionable after the
+  # InhibitDelayMaxSec=1 change above. Measure first: compare
+  #   journalctl | grep -E "Started Hyprlock|Locking session"
+  # A remaining ~5s gap means upstream hyprlock #543 (the blocking fprintd
+  # `Claim`) is the only thing left, and that is what this addresses.
+  #
+  # WHAT IS WRONG TODAY
+  # hyprlock gets started three different ways, with no coordination:
+  #   1. hypridle lock_cmd        -> systemctl --user start hyprlock.service
+  #   2. hypridle before_sleep_cmd -> loginctl lock-session -> (1) again
+  #   3. hypridle after_sleep_cmd  -> systemctl --user try-restart hyprlock
+  # Path 3 exists solely to RE-ARM THE FINGERPRINT READER on resume, because
+  # hyprlock 0.9.6 has no fprint re-claim retry (upstream #711/#577): an
+  # instance that lived across suspend gets exactly one claim attempt and
+  # fails silently. See the fprintd comment block below for that history.
+  #
+  # The cost of path 3 is that on resume there are briefly TWO hyprlock
+  # instances. Observed 2026-08-24 12:58: the OUTGOING instance (388391) fired
+  # a last `Claim` at fprintd from an already-dead D-Bus connection, fprintd
+  # sat in a failing authorization round-trip against that ghost
+  # ("NameHasNoOwner"), and that blocked fprintd's own shutdown — which in
+  # turn blocked `systemctl restart fprintd` inside fprintd-resume, stretching
+  # a normally-1.1s service to 10.98s. The incoming instance (388641) then sat
+  # waiting on a reader that was not claimable yet.
+  #
+  # WHAT TO DO INSTEAD
+  # Kill the old instance BEFORE sleep rather than restarting it after, so the
+  # ghost-claim window never exists:
+  #   a. Add hyprlock to the fprintd-presleep stop list (or add a sibling
+  #      hyprlock-presleep user service ordered Before=systemd-suspend.service)
+  #      so the pre-suspend instance is gone while the session is still sane.
+  #   b. Set Restart=always + RestartSec=0 on systemd.user.services.hyprlock
+  #      (home.nix ~line 73; currently Restart=on-failure) so systemd brings a
+  #      FRESH instance straight back up. A fresh instance claims + starts
+  #      verifying within ~1s every time — verified across every "Started
+  #      Hyprlock" in the journal.
+  #   c. Then DELETE the try-restart from after_sleep_cmd in
+  #      dotfiles/hypr/hypridle.conf, leaving only `hyprctl dispatch dpms on`.
+  #      Path 3 disappears; only paths 1/2 remain, and they are the same path.
+  #
+  # WHY NOT JUST DELETE PATH 3 (option "B")
+  # Because (a) and (b) are what preserve the fingerprint. Removing the
+  # try-restart on its own reintroduces exactly the silent-fingerprint-failure
+  # regression documented in the fprintd block below and in the
+  # fprintd_resume_workaround memory note. Do NOT do c without a and b.
+  #
+  # RISK / VERIFICATION
+  # This touches the lock path, so a mistake means either no lock screen on
+  # resume (security) or no fingerprint (annoyance). Verify across at least 3
+  # suspend/resume cycles AND one lid-close cycle:
+  #   - a lock surface is present immediately on wake (never a bare desktop),
+  #   - hyprlock logs "fprint: claimed device" + "started verifying" within ~1s,
+  #   - the start->"Locking session" gap is under ~1s,
+  #   - no "Authorization denied ... NameHasNoOwner" from fprintd.
+  # Keep the previous generation bootable while testing.
+  #
+  # ALTERNATIVE THAT MAKES THIS MOOT: if hyprlock ever ships the #543 fix
+  # (blocking `Claim` moved off the event loop / into a thread — merged as
+  # #544 but unreleased as of v0.9.6, 2026-07-18), bump the package and
+  # re-measure before implementing any of the above.
+  # ===========================================================================
+
   systemd.services.fprintd-presleep = {
     description = "Stop fprintd before sleep so no stale device survives resume";
     wantedBy = [
