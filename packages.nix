@@ -63,6 +63,15 @@ in
     dwdiff
     gcc
     git
+    # Google Cloud CLI: gcloud, gsutil, bq. Base SDK only -- no extra
+    # components. To add some later (e.g. gke-gcloud-auth-plugin for kubectl
+    # against GKE, or alpha/beta subcommands) replace this line with:
+    #   (google-cloud-sdk.withExtraComponents (with google-cloud-sdk.components; [
+    #     gke-gcloud-auth-plugin
+    #   ]))
+    # `gcloud components install` does NOT work on nix -- the store is
+    # read-only, so components must be declared here instead.
+    google-cloud-sdk
     graphviz  # dot
     jq
     # nodejs_20
