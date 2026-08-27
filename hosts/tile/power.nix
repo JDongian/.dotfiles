@@ -292,28 +292,58 @@
     ];
     serviceConfig = {
       Type = "oneshot";
-      # Restart fprintd ONCE up front to drop any instance that survived the
-      # USB re-enumeration with a stale Device/N, then POLL for health without
-      # hammering it: each round just triggers D-Bus (re)activation via a
-      # cheap `fprintd-list` client call — NOT another `systemctl restart`,
-      # which trips systemd's StartLimit rate-limiter (learned the hard way:
-      # restarting in a tight loop fails with "start attempted too often").
+      # POLL FIRST, restart only if actually unhealthy. Rewritten 2026-08-27
+      # after this service was caught DESTROYING hyprlock's fingerprint claim.
+      #
+      # ROOT CAUSE (evidenced, two resumes 2026-08-26 11:50 and 2026-08-27 01:30):
+      # hyprlock's startup calls g_pAuth->start() BEFORE it logs "Running on
+      # Hyprland", and /etc/pam.d/hyprlock has pam_fprintd as the FIRST auth
+      # module. So every lock synchronously D-Bus-activates net.reactivated.Fprint
+      # during startup. fprintd-presleep leaves fprintd stopped across suspend,
+      # so on resume that activation is a COLD start — and it queues behind the
+      # unconditional `systemctl restart fprintd` this service used to issue.
+      # Result: hyprlock blocked ~4.3s in PAM (blank lock screen), and then the
+      # restart tore the daemon down at the exact moment hyprlock claimed it:
+      #   01:30:45.634 hyprlock: fprint: using device path .../Device/0
+      #   01:30:45.649 fprintd:  Deactivated successfully
+      #   01:30:45.651 hyprlock: could not claim device, [NoReply]
+      #                          Remote peer disconnected
+      # (At 11:50 the claim SUCCEEDED and was destroyed 1ms later —
+      # "User destroyed open device! Not cleaning up properly!". Same cause,
+      # 15ms difference in outcome.) Both times this service then reported
+      # "fprintd healthy after 1 poll(s)", because it measured daemon health
+      # and not whether it had just invalidated somebody's claim.
+      #
+      # TWO CHANGES:
+      #  1. PRE-WARM. Activate fprintd immediately via a cheap `fprintd-list`
+      #     so it is already running when hyprlock's PAM stack asks ~4s later.
+      #     A cold D-Bus activation measured 373ms standalone; the damage came
+      #     from it queueing behind a restart, not from the activation itself.
+      #  2. RESTART ONLY IF UNHEALTHY. The health check below already detects
+      #     precisely the stale-device case the restart was written for, so
+      #     run it FIRST and keep the restart as the repair path rather than
+      #     the default path. On both observed resumes fprintd was healthy, so
+      #     this makes the common case a no-op and the claim survives.
+      #
       # Healthy == exactly one "Device at ..." line AND no "(deleted)" usb fds
-      # lingering in the fprintd process. Up to ~10s, then leave it to hyprlock's
-      # own claim to re-activate a clean instance on demand.
+      # lingering in the fprintd process. Restart at most ONCE (never in a
+      # loop: that trips systemd's StartLimit — "start attempted too often").
       #
       # PATH must include gnugrep + coreutils explicitly — writeShellScript does
       # not inherit a login PATH, and procps does NOT provide grep.
       ExecStart = pkgs.writeShellScript "fprintd-resume" ''
         set -u
         PATH=${pkgs.systemd}/bin:${pkgs.fprintd}/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin:${pkgs.procps}/bin
-        # Clear any StartLimit state from prior churn, then one clean restart.
+
+        # Clear any StartLimit state left over from prior churn so that IF we
+        # do need the repair restart below, it is allowed to run.
         systemctl reset-failed fprintd.service 2>/dev/null || true
-        systemctl restart fprintd.service || true
-        for i in $(seq 1 20); do
-          sleep 0.5
-          # `fprintd-list` is itself a D-Bus client, so it re-activates fprintd
-          # if it idled off — this is the "keep trying" without a restart storm.
+
+        # check_health: echoes "ok" when fprintd presents exactly one device and
+        # holds no stale (deleted) usb fds. `fprintd-list` is itself a D-Bus
+        # client, so calling it ACTIVATES fprintd if it is not running — that is
+        # the pre-warm (change 1) as well as the probe.
+        check_health() {
           out=$(fprintd-list joshua 2>/dev/null || true)
           ndev=$(printf '%s\n' "$out" | grep -c 'Device at' || true)
           pid=$(pidof fprintd 2>/dev/null || true)
@@ -321,13 +351,39 @@
           if [ -n "$pid" ]; then
             zombies=$(ls -l /proc/"$pid"/fd/ 2>/dev/null | grep -c 'usb.*(deleted)' || true)
           fi
-          if [ "$ndev" = "1" ] && [ "$zombies" = "0" ]; then
-            echo "fprintd healthy after $i poll(s): 1 device, no zombie fds"
+          [ "$ndev" = "1" ] && [ "$zombies" = "0" ] && echo ok
+        }
+
+        # PRE-WARM + FIRST CHECK. Do this before considering any restart: on a
+        # healthy resume this is the whole job, fprintd ends up warm for
+        # hyprlock's PAM activation, and nothing is torn down underneath it.
+        if [ -n "$(check_health)" ]; then
+          echo "fprintd healthy on first check (pre-warmed, no restart needed)"
+          exit 0
+        fi
+
+        # Not healthy: give a slow USB re-enumeration a chance to settle before
+        # escalating to the disruptive repair.
+        for i in $(seq 1 6); do
+          sleep 0.5
+          if [ -n "$(check_health)" ]; then
+            echo "fprintd healthy after $i poll(s) without restart"
             exit 0
           fi
-          echo "poll $i: ndev=$ndev zombies=$zombies — retrying"
         done
-        echo "fprintd not confirmed healthy after 20 polls; leaving to on-demand activation"
+
+        # REPAIR PATH (was previously the default): a genuinely stale instance
+        # survived resume. Restart ONCE, then poll again.
+        echo "fprintd still unhealthy after pre-warm polls; restarting once"
+        systemctl restart fprintd.service || true
+        for i in $(seq 1 14); do
+          sleep 0.5
+          if [ -n "$(check_health)" ]; then
+            echo "fprintd healthy $i poll(s) after repair restart"
+            exit 0
+          fi
+        done
+        echo "fprintd not confirmed healthy after repair; leaving to on-demand activation"
         exit 0
       '';
     };
