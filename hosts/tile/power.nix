@@ -253,6 +253,49 @@
   # re-measure before implementing any of the above.
   # ===========================================================================
 
+  # --- hyprlock PAM: no pam_fprintd (hyprlock claims fprintd natively) -------
+  # ROOT CAUSE, found 2026-08-28 15:00: hyprlock was claiming the fingerprint
+  # device TWICE, from two independent D-Bus clients inside the SAME process,
+  # and they raced each other:
+  #   1. pam_fprintd — first `auth` module in /etc/pam.d/hyprlock. hyprlock's
+  #      startup calls g_pAuth->start(), which runs the PAM stack, so
+  #      pam_fprintd claims the device and starts verifying on ITS connection.
+  #   2. hyprlock's own fprint code (fingerprint:enabled = true in
+  #      hyprlock.conf) — claims on a DIFFERENT connection moments later and
+  #      loses:
+  #        15:00:29.327 hyprlock: PAM: Place your right index finger  (1 wins)
+  #        15:00:29.775 hyprlock: could not claim device, [AlreadyInUse] (2 loses)
+  #      hyprlock's own handler then believes it has no device, which produces
+  #      the contradictory pair seen on every bad resume: VerifyStop ->
+  #      "Device already in use by another user" while VerifyStart -> "Device
+  #      was not claimed before use". The reader sits armed-but-unusable until
+  #      PAM's 30s "Verification timed out". On 2026-08-28 that locked the
+  #      session for 3min13s.
+  #
+  # WHY THIS SURFACED ONLY AFTER a86c535: the old fprintd-resume did an
+  # unconditional `systemctl restart fprintd`, which happened to tear the
+  # daemon down BETWEEN the two claims, so claim 2 landed on a fresh daemon.
+  # The double-claim was always there; the restart was masking it with a race
+  # (while causing its own failures — see the fprintd-resume comment below).
+  #
+  # RULED OUT by direct test, do not re-chase: fprintd DOES release a claim
+  # when the claiming peer dies (it calls g_bus_watch_name /
+  # _fprint_device_client_vanished; verified live — a claim taken by a
+  # short-lived `busctl` is already gone once that process exits). So this was
+  # never a stale claim orphaned by the outgoing hyprlock instance; the
+  # competitor is inside the NEW process.
+  #
+  # FIX: drop pam_fprintd from hyprlock's stack and let hyprlock's native
+  # fingerprint support be the single claimant. hyprlock.conf already has
+  # `fingerprint:enabled = true` plus ready/present/retry messages, so this
+  # keeps the per-touch UI feedback; it is pam_fprintd that is redundant here.
+  # Bonus: pam_fprintd is also what made g_pAuth->start() block on a COLD
+  # fprintd D-Bus activation during startup, which is the other half of the
+  # blank-lock-screen delay.
+  #
+  # NOTE this is hyprlock ONLY. `sudo`, login, greetd etc. keep pam_fprintd.
+  security.pam.services.hyprlock.fprintAuth = false;
+
   systemd.services.fprintd-presleep = {
     description = "Stop fprintd before sleep so no stale device survives resume";
     wantedBy = [
