@@ -333,8 +333,33 @@
       "systemd-hybrid-sleep.service"
       "systemd-suspend-then-hibernate.service"
     ];
+    # Do NOT let this block a shutdown. 2026-09-01: pressing power during the
+    # resume window was REFUSED, twice, with
+    #   "Transaction for poweroff.target/start is destructive
+    #    (fprintd-resume.service has 'start' job queued, but 'stop' is
+    #    included in transaction)"
+    # because this unit is ordered inside the sleep transaction and was still
+    # running 26s in. systemd will not break a queued start job for a
+    # poweroff, so the machine silently ignored the power button. This is a
+    # best-effort fixup for a fingerprint reader: it must never outrank the
+    # user asking the machine to turn off.
+    #   - JobTimeoutSec/RuntimeMaxSec bound how long it can exist at all.
+    #   - Conflicts/Before shutdown.target let a poweroff preempt it cleanly
+    #     rather than deadlocking the transaction.
+    unitConfig = {
+      # Hard ceiling on the whole unit; the script's own worst case is ~11s.
+      JobTimeoutSec = 30;
+      # Yield to shutdown instead of contradicting it.
+      Conflicts = [ "shutdown.target" ];
+      Before = [ "shutdown.target" ];
+    };
+
     serviceConfig = {
       Type = "oneshot";
+      # Belt and braces: if the script ever wedges (a blocking D-Bus
+      # activation did stall it 40s on 2026-09-01), kill it rather than let it
+      # linger as a queued job that blocks poweroff.
+      RuntimeMaxSec = 25;
       # POLL FIRST, restart only if actually unhealthy. Rewritten 2026-08-27
       # after this service was caught DESTROYING hyprlock's fingerprint claim.
       #
