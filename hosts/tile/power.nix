@@ -343,12 +343,24 @@
     # poweroff, so the machine silently ignored the power button. This is a
     # best-effort fixup for a fingerprint reader: it must never outrank the
     # user asking the machine to turn off.
-    #   - JobTimeoutSec/RuntimeMaxSec bound how long it can exist at all.
+    #   - TimeoutStartSec bounds how long it can RUN (see below).
     #   - Conflicts/Before shutdown.target let a poweroff preempt it cleanly
     #     rather than deadlocking the transaction.
+    #
+    # DO NOT reintroduce JobTimeoutSec here. It was set to 30 and it broke
+    # every hibernate resume (4/4 between 2026-09-04 and 2026-09-06; 9/9
+    # suspends were fine). JobTimeoutSec bounds how long the job may sit in
+    # the QUEUE, not how long the script runs, and the clock keeps ticking
+    # while the machine is hibernated:
+    #   23:32:10  job enqueued as part of the sleep transaction
+    #             ("Starting System Hibernate..." comes AFTER this)
+    #   23:37:17  kernel thaws -> job is already 5m old -> instantly killed
+    #             "Job fprintd-resume.service/start timed out"
+    # The script never executed at all -- it logged nothing on those boots.
+    # Suspend escaped this because systemd only queues the resume job on
+    # wake there (observed "Starting Poll..." at 21:17:42 after a 23min S3),
+    # so a long suspend was harmless while a 92s hibernate was fatal.
     unitConfig = {
-      # Hard ceiling on the whole unit; the script's own worst case is ~11s.
-      JobTimeoutSec = 30;
       # Yield to shutdown instead of contradicting it.
       Conflicts = [ "shutdown.target" ];
       Before = [ "shutdown.target" ];
@@ -359,7 +371,15 @@
       # Belt and braces: if the script ever wedges (a blocking D-Bus
       # activation did stall it 40s on 2026-09-01), kill it rather than let it
       # linger as a queued job that blocks poweroff.
-      RuntimeMaxSec = 25;
+      #
+      # This is TimeoutStartSec, not RuntimeMaxSec: systemd ignores
+      # RuntimeMaxSec on Type=oneshot and said so on every boot --
+      # "RuntimeMaxSec= has no effect in combination with Type=oneshot.
+      # Ignoring." -- so the wedge guard was never actually armed. For a
+      # oneshot, TimeoutStartSec is the knob that bounds ExecStart, and
+      # unlike JobTimeoutSec it only starts counting once the script really
+      # begins, so hibernating for an hour costs it nothing.
+      TimeoutStartSec = 25;
       # POLL FIRST, restart only if actually unhealthy. Rewritten 2026-08-27
       # after this service was caught DESTROYING hyprlock's fingerprint claim.
       #
