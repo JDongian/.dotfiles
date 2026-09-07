@@ -52,8 +52,11 @@
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.users.joshua = { config, pkgs, lib, ... }: {
             imports = [ ./home.nix ];
-            # Tile-specific monitor config (1920x1080)
-            home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/tile-monitor.conf;
+            # Tile-specific monitor config (1920x1080). Lua now: HM writes this
+            # as ~/.config/hypr/monitor.lua and auto-emits `require("monitor")`
+            # at the top of hyprland.lua, replacing the old `source =` line.
+            wayland.windowManager.hyprland.extraLuaFiles."monitor" =
+              builtins.readFile ./dotfiles/hypr/hosts/tile-monitor.lua;
           };
         }
       ];
@@ -82,8 +85,11 @@
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.users.joshua = { config, pkgs, lib, ... }: {
             imports = [ ./home.nix ];
-            # Gravel-specific monitor config (2560x1440)
-            home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/gravel-monitor.conf;
+            # Gravel-specific monitor config (2560x1440). Lua now: HM writes this
+            # as ~/.config/hypr/monitor.lua and auto-emits `require("monitor")`
+            # at the top of hyprland.lua, replacing the old `source =` line.
+            wayland.windowManager.hyprland.extraLuaFiles."monitor" =
+              builtins.readFile ./dotfiles/hypr/hosts/gravel-monitor.lua;
           };
         }
       ];
