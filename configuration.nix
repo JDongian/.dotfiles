@@ -31,11 +31,12 @@
   # Why deferred: TPM2 unlock without Secure Boot is a real security
   # regression (rogue-OS / filesystem-confusion attack — see oddlama.org
   # write-up). Doing it right requires lanzaboote, which is a separate
-  # multi-step project. NOTE: this needs boot.initrd.systemd.enable, which is
-  # deliberately NOT set — turning it on (2026-05-17) silently broke
-  # hibernation resume (LUKS-swap dependency ordering in the systemd initrd;
-  # see hosts/tile/power.nix). If Secure Boot work re-enables it, the resume
-  # path must be fixed first.
+  # multi-step project. NOTE: this needs boot.initrd.systemd.enable. That was
+  # previously flagged here as a blocker because turning it on (2026-05-17)
+  # silently broke hibernation resume. That is NO LONGER TRUE: as of
+  # 2026-09-22 the option defaults to true in nixpkgs, tile is running a
+  # systemd initrd, and hibernate/resume works (see hosts/tile/power.nix for
+  # the journal evidence). So this is not an obstacle to the Secure Boot work.
 
   # NOTE: lid/suspend-then-hibernate, HibernateDelay, the MFi + fingerprint
   # udev rules, and the fprintd-resume hook all moved to hosts/tile/power.nix

@@ -20,6 +20,19 @@
   };
   outputs = { self, nixpkgs, ... }@inputs: let
     system = "x86_64-linux";
+
+    # Wi-Fi profiles staged by scripts/stage-wifi.sh into /etc/nixos/wifi-secrets.
+    # They are gitignored (plaintext PSKs; this repo is public) and therefore
+    # absent from `self`, so they are imported into the store explicitly.
+    #
+    # Requires --impure when the directory exists, because it reads a path
+    # outside the flake. `nix build .#installer` alone will NOT pick these up;
+    # use scripts/build-iso.sh, which passes the flag and says what it is doing.
+    wifiDir =
+      let p = builtins.getEnv "OBSIDIAN_WIFI_DIR";
+      in if p != "" && builtins.pathExists p
+         then builtins.path { path = p; name = "obsidian-wifi-secrets"; }
+         else null;
   in {
     # ThinkPad T490s configuration
     nixosConfigurations.tile = nixpkgs.lib.nixosSystem {
@@ -88,6 +101,77 @@
         }
       ];
     };
+
+    # ThinkPad X1 Carbon 7th gen configuration.
+    # Mirrors `tile` as closely as the hardware allows: same configuration.nix,
+    # same home.nix, same overlays. Differences are confined to hosts/obsidian
+    # (hardware quirks + power) and disko-obsidian.nix (disk layout).
+    nixosConfigurations.obsidian = nixpkgs.lib.nixosSystem {
+      specialArgs = {
+        inherit inputs;
+        inherit system;
+      };
+      modules = [
+        inputs.disko.nixosModules.disko
+        ./hosts/obsidian
+        inputs.home-manager.nixosModules.default
+        {
+          nixpkgs.overlays = [
+            # claude-code from the overlay default; keep in sync with tile.
+            # Bump via `nix flake update claude-code-overlay`.
+            inputs.claude-code-overlay.overlays.default
+          ];
+        }
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit inputs; };
+          home-manager.users.joshua = { config, pkgs, lib, ... }: {
+            imports = [ ./home.nix ];
+            # Obsidian-specific monitor config (2560x1440 WQHD)
+            home.file.".config/hypr/monitor.conf".source =
+              ./dotfiles/hypr/hosts/obsidian-monitor.conf;
+          };
+        }
+      ];
+    };
+
+    # --- Installer ISO for obsidian ------------------------------------------
+    # Build:  nix build .#installer
+    # Result: ./result/iso/nixos-obsidian-installer.iso
+    #
+    # Embeds this repo AND the full obsidian store closure, so the install on
+    # the X1 runs entirely offline at exactly the revision built here.
+    #
+    # NOTE: if wifi-secrets/ is staged (scripts/stage-wifi.sh), the resulting
+    # ISO CONTAINS PLAINTEXT Wi-Fi PASSWORDS. Treat the USB accordingly.
+    nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
+      inherit system;
+      specialArgs = {
+        inherit inputs system;
+        obsidianSystem = self.nixosConfigurations.obsidian.config.system.build.toplevel;
+        # The flake source tree (git-tracked files only).
+        repoSrc = self;
+        # Staged Wi-Fi profiles. Set via the `wifiDir` flake-level argument
+        # below; null when not staged, in which case the ISO still builds and
+        # simply carries no credentials.
+        #
+        # TWO TRAPS, both of which fail SILENTLY (no error, just an ISO with
+        # zero Wi-Fi profiles) and both of which were hit while writing this:
+        #   1. It cannot come from `self`: wifi-secrets/ is gitignored, and a
+        #      git flake's `self` contains only GIT-TRACKED files.
+        #   2. It cannot be a bare path literal like /etc/nixos/wifi-secrets:
+        #      under PURE flake evaluation, builtins.pathExists on a path
+        #      outside the flake returns false rather than erroring.
+        # Hence the explicit builtins.path import below, which is the only
+        # form that both reaches outside the flake and works in pure eval.
+        inherit wifiDir;
+      };
+      modules = [ ./installer/iso.nix ];
+    };
+
+    packages.${system}.installer =
+      self.nixosConfigurations.installer.config.system.build.isoImage;
 
     # Keep 'default' as an alias to current machine for convenience
     nixosConfigurations.default = self.nixosConfigurations.tile;

@@ -1,2 +1,7 @@
 .claude
 result
+
+# Wi-Fi profiles carry PLAINTEXT PSKs (psk= / password= lines). This repo is
+# published to github.com/JDongian/.dotfiles, so these must never be committed.
+# Populated locally by scripts/stage-wifi.sh; consumed by the installer ISO.
+wifi-secrets/

@@ -1,13 +1,17 @@
 { config, pkgs, lib, ... }:
 
 # =============================================================================
-# POWER MANAGEMENT — central module for tile (ThinkPad T490s)
+# POWER MANAGEMENT — central module for obsidian (ThinkPad X1 Carbon 7th gen)
 # =============================================================================
+# PORTED FROM hosts/tile/power.nix. The logic, and especially the hard-won
+# comments explaining WHY each knob is set, are tile's — keep them in sync.
+# The ONE substantive difference is device naming, explained under
+# "Hibernation" below and in disko-obsidian.nix.
+#
 # Single place for everything that decides what happens when the machine is
 # idle, the lid closes, or it goes to sleep. The ONE piece that cannot live
 # here is the per-session idle ladder (dim → lock → screen-off), because that
-# is a Hyprland/home-manager dotfile: see dotfiles/hypr/hypridle.conf. That
-# file's header points back to this module so the two stay legible together.
+# is a Hyprland/home-manager dotfile: see dotfiles/hypr/hypridle.conf.
 #
 # Layered model, outermost (hardware) to innermost (session):
 #   1. powerManagement.enable      — base suspend/resume infrastructure
@@ -18,11 +22,8 @@
 #   6. udev charge/autosuspend     — per-device power quirks
 #   (7. hypridle idle ladder       — lives in hypridle.conf, cross-referenced)
 #
-# TODO (deferred, decide separately):
-#   - thermald + TLP battery charge thresholds (40/80) exist on `gravel` but
-#     NOT here. tile would benefit from both. See hosts/gravel/hardware.nix.
-#   - hypridle has a commented-out 600s idle→suspend listener; an idle *open*
-#     laptop currently never suspends (only lid-close sleeps). Decide if wanted.
+# NOT deferred here (unlike tile): thermald and TLP charge thresholds are on
+# from day one — see hosts/obsidian/hardware.nix.
 # =============================================================================
 
 {
@@ -32,59 +33,66 @@
   # --- Hibernation -----------------------------------------------------------
   # https://nixos.wiki/wiki/Hibernation
   #
-  # HOW RESUME WORKS HERE (evidenced from the journal, boots Jan–Jun 2026):
-  # resume is the CLASSIC script-initrd path. NixOS emits a `resume=` kernel
-  # param from boot.resumeDevice and the script initrd resumes from it.
-  # Hibernate writes to the encrypted swap PARTITION (luks ... a6b327e9).
-  # The partition IS listed as a swapDevice (priority 0, lowest) so the
-  # kernel can write hibernate images to it, but normal paging goes to the
-  # swapfile (priority 10) first. This keeps the partition empty for hibernate.
-  # resumeDevice below names the same partition.
-  # This path resumed reliably from March through 2026-05-06.
+  # DEVICE NAMING — the one place obsidian deliberately diverges from tile.
+  # tile points resumeDevice at a raw UUID (a6b327e9...) because tile was
+  # installed BY HAND: nothing ever assigned GPT partition names, so
+  # `/dev/disk/by-partlabel/` there lists only EFI and root with NO entry for
+  # its swap partition, and its LUKS mappers carry auto `luks-<uuid>` names.
+  # by-uuid was the only stable handle tile could have used.
   #
-  # UPDATE 2026-09-22 — the warning that used to live here is OUT OF DATE.
-  # It said "DO NOT set boot.initrd.systemd.enable = true". tile is in fact
-  # running a SYSTEMD initrd right now and hibernation works fine:
-  #   - journal, current boot: `systemd[1]: Reached target Initrd Root Device`
-  #     (a line only a systemd initrd produces)
-  #   - `Starting Resume from hibernation...` / `Finished Resume from
-  #     hibernation`, plus 14 `PM: hibernation: hibernation exit` events
-  #     across Sep 4-18 2026
-  #   - `resume=` is still on the cmdline (see /proc/cmdline)
-  # Nothing in this repo sets the option; current nixpkgs defaults it to true,
-  # so the default flipped under us and hibernation kept working regardless.
+  # obsidian is partitioned by disko, which assigns the LUKS mapper name
+  # declaratively (see disko-obsidian.nix: name = "cryptswap"). That makes
+  # /dev/mapper/cryptswap knowable BEFORE the disk exists, so this file could
+  # be written in full ahead of the install with no post-install UUID patching
+  # and no placeholder to forget. It is exactly as deterministic as by-uuid.
   #
-  # The original failure was real but version-specific: on 2026-05-17, with
-  # the nixpkgs of that time, systemd-hibernate-resume.service failed with
-  # result 'dependency' because the LUKS swap was not unlocked early enough in
-  # the systemd initrd. Upstream has since fixed that ordering. Keep this
-  # history for context, but do NOT force the option to false on that basis —
-  # verify the two journal lines above before blaming the initrd flavor.
+  # INITRD FLAVOR — read this before "fixing" anything here.
+  # We do NOT set boot.initrd.systemd.enable either way; obsidian takes the
+  # nixpkgs default, which is now TRUE (systemd initrd). That is deliberate,
+  # and it contradicts an older warning you may find in hosts/tile/power.nix
+  # and in the notes, so here is the evidence as of 2026-09-22:
   #
-  # resumeDevice points at the swap PARTITION a6b327e9 (verified live: it
-  # resolves to /dev/dm-1, the decrypted luks-d2e857c5 swap). This matches the
-  # known-good boot of 2026-05-06, whose cmdline was
-  # `resume=/dev/disk/by-uuid/a6b327e9-...` and which resumed correctly.
+  #   - tile IS running a systemd initrd right now. Its journal for the
+  #     current boot shows `systemd[1]: Reached target Initrd Root Device`,
+  #     which only a systemd initrd emits.
+  #   - Hibernation works there anyway: `Starting Resume from hibernation...`
+  #     followed by `Finished Resume from hibernation`, and 14 kernel
+  #     `PM: hibernation: hibernation exit` events over Sep 4-18 2026.
+  #   - `resume=` IS still emitted on the cmdline under systemd-initrd on
+  #     current nixpkgs; the claim that it stops being emitted no longer holds.
   #
-  # CORRECTED 2026-06-05: the old value dc99dc0b-... resolves to NO device on
-  # disk. Under the script initrd, NixOS emits resumeDevice verbatim as the
-  # `resume=` kernel param, and stage-1 skips resume entirely when that device
-  # is absent — so it would have cold-booted. (It only "worked" historically on
-  # boots that happened to carry resume=a6b327e9 or a bare resume_offset, not
-  # dc99dc0b.) No resume_offset: offsets apply only to swapfile targets, and the
-  # image lands on the partition (low-priority swap device kept empty for
-  # hibernate), so an offset is meaningless. No resume_offset needed.
-  boot.resumeDevice = "/dev/disk/by-uuid/a6b327e9-d898-49a9-8858-9891cc770e82";
+  # WHAT THE OLD WARNING WAS ABOUT (still worth knowing): on 2026-05-17 tile
+  # turned this on and resume SILENTLY BROKE. systemd-hibernate-resume.service
+  # failed with result 'dependency' because the encrypted swap was a LUKS
+  # volume not unlocked early enough in the systemd initrd for the resume
+  # service to reach it. That was a real failure, but it was specific to the
+  # nixpkgs of that era and has since been fixed upstream — the successful
+  # resumes above are on a LUKS swap under a systemd initrd, which is exactly
+  # the configuration that used to fail.
+  #
+  # So: do not force this to false as a superstition. If resume ever breaks
+  # again, VERIFY first (see below) rather than assuming this is the cause.
+  #
+  # No resume_offset: offsets apply only to swapFILE targets, and the image
+  # lands on the partition (kept empty via the priority split below).
+  #
+  # VERIFY AFTER INSTALL: `cat /proc/cmdline` must contain
+  # `resume=/dev/mapper/cryptswap`. If it does not, resume is NOT working no
+  # matter what the hibernate side appears to do.
+  boot.resumeDevice = "/dev/mapper/cryptswap";
+
+  # The swap PARTITION itself is declared by disko (priority 0). Only the
+  # swapFILE is added here, at HIGH priority.
+  #
+  # WHY THE SPLIT: tile, 2026-06-24 — the partition had higher priority than
+  # the swapfile, so the kernel paged into the partition first. Under memory
+  # pressure it filled, and `systemctl hibernate` was refused outright with
+  # "Not enough suitable swap space". Paging must fill the FILE; the partition
+  # must stay empty to hold a hibernation image.
   swapDevices = [
     {
-      # Hibernate target — must stay swapon'd for the kernel to write images.
-      # Priority 0 (lowest used) so normal paging fills the swapfile first.
-      device = "/dev/disk/by-uuid/a6b327e9-d898-49a9-8858-9891cc770e82";
-      priority = 0;
-    }
-    {
       device = "/var/lib/swapfile";
-      size = 15779; # MBs
+      size = 16500; # MBs — sized against 16 GB RAM, matching tile's ~15.8 GB
       priority = 10; # higher = paged to first, keeping the partition free
     }
   ];
@@ -493,11 +501,20 @@
       DRIVERS=="apple-mfi-fastcharge", \
       ATTR{charge_type}="Fast"
 
-    # Synaptics fingerprint reader (06cb:00bd): disable USB autosuspend so
-    # the kernel doesn't power it down between scans (causes stalls on
-    # next claim). The bulk of fprintd's stale-device problems come from
-    # system suspend/resume, not idle autosuspend — see the
-    # fprintd-resume.service above for that.
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="06cb", ATTR{idProduct}=="00bd", ATTR{power/control}="on"
+    # Synaptics fingerprint reader: disable USB autosuspend so the kernel
+    # doesn't power it down between scans (causes stalls on next claim). The
+    # bulk of fprintd's stale-device problems come from system suspend/resume,
+    # not idle autosuspend — see the fprintd-resume.service above for that.
+    #
+    # BROADENED vs tile: tile pins the exact product id 06cb:00bd. X1C7 units
+    # ship several Synaptics sensors (00bd, 00df, 00c9, 0100 are all seen in
+    # the wild), and a rule pinned to the wrong id silently does nothing —
+    # you would only notice as intermittent post-resume scan stalls. Matching
+    # the VENDOR (06cb) covers every variant; 06cb is Synaptics, and the only
+    # 06cb device in this laptop is the fingerprint reader, so this is not
+    # over-broad in practice.
+    #
+    # To tighten: run `lsusb | grep -i synaptics` on obsidian and pin the id.
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="06cb", ATTR{power/control}="on"
   '';
 }
