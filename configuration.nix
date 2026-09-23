@@ -52,6 +52,29 @@
   # The T490s (Lenovo 20NY) exposes UEFI/ME/Thunderbolt updates on LVFS.
   services.fwupd.enable = true;
 
+  # =========================================================================
+  # Intel GPU video acceleration (VAAPI)
+  # =========================================================================
+  # All three hosts are UHD 620-class (Gen9.5: Whiskey/Kaby Lake U), so this
+  # is generation-generic and lives here rather than per-host.
+  #
+  # intel-media-driver (iHD) ONLY, deliberately:
+  #   - i965 (intel-vaapi-driver) is EOL upstream. Probed side by side on
+  #     obsidian's UHD 620 the two are near-identical -- H.264, HEVC Main and
+  #     Main10, VP8, VP9 Profile0, MPEG2, VC1, JPEG all present on both. iHD
+  #     additionally decodes VP9 Profile2 (10-bit); i965 uniquely has VP9
+  #     encode and H.264 MVC, neither of which we care about.
+  #   - intel-media-sdk (the QSV runtime for Gen8-11) is NOT installed: nixpkgs
+  #     marks it insecure (EOL, CVE-2023-22656 + four more local privesc CVEs).
+  #     ffmpeg-full has QSV compiled in, but h264_vaapi/hevc_vaapi cover the
+  #     same codecs on this chip with no extra runtime. Use -hwaccel vaapi.
+  #   - OpenCL (intel-compute-runtime-legacy1) left out; nothing installed
+  #     wants it. Shotcut and OBS use VAAPI, not OpenCL.
+  #
+  # NOTE: Gen9.5 has NO AV1 hardware decode (that starts at Gen12/Tiger Lake).
+  # AV1 streams -- which is much of YouTube now -- stay on the CPU regardless.
+  hardware.graphics.extraPackages = with pkgs; [ intel-media-driver ];
+
 
   # Networking
   # Note: hostname is now set in hosts/<hostname>/hardware.nix
@@ -159,6 +182,10 @@
 
   environment.variables = {
     PRISMA_ENGINES_DIRECTORY = "${pkgs.prisma-engines}/bin";
+
+    # Pin the VAAPI driver. libva probes i915 -> iHD -> i965, so this is the
+    # current behaviour made explicit; verify with `vainfo`.
+    LIBVA_DRIVER_NAME = "iHD";
 
     # Claude Code is installed DECLARATIVELY via the claude-code-overlay
     # (see flake.nix). Its built-in auto-updater must stay OFF or it npm-installs

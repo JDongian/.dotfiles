@@ -1,0 +1,3 @@
+/* Obsidian (X1 Carbon 7th gen, 2560x1440 WQHD) -- larger bar to match the
+   14px terminal font, so the WQHD panel doesn't render everything tiny. */
+* { font-size: 14px; }

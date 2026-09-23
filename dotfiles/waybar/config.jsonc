@@ -26,6 +26,7 @@
         "sway/window"
     ],
     "modules-right": [
+        "custom/netspeed",
         "temperature",
         "disk",
         "custom/swap",
@@ -176,6 +177,22 @@
     "tray": {
         "icon-size": 18,
         "spacing": 10
+    },
+
+    // Condensed up/down throughput; full detail (interface, IP, B/s + bit/s,
+    // totals) is in the tooltip on hover. Deliberately NOT waybar's built-in
+    // network module: that one hardcodes the unit into its output and ignores
+    // width specs, so the narrowest it renders is ~19 columns. See the header
+    // comment in netspeed.sh.
+    //
+    // No "interval" key on purpose -- the script loops and prints a line every
+    // 2s, which is how waybar identifies a continuous module. restart-interval
+    // relaunches it if it ever exits.
+    "custom/netspeed": {
+        "exec": "~/.config/waybar/netspeed.sh 2",
+        "return-type": "json",
+        "restart-interval": 5,
+        "tooltip": true
     },
 
     "custom/iops": {

@@ -118,8 +118,10 @@ in
     # =========================================================================
     kdePackages.kolourpaint
     audacity
+    chafa
     feh
     ffmpeg-full
+    libva-utils   # vainfo -- verifies the VAAPI setup in configuration.nix
     font-manager
     ghostscript
     gimp

@@ -100,6 +100,14 @@
   home.file.".config/waybar/config".source = ./dotfiles/waybar/config.jsonc;
   home.file.".config/waybar/style.css".source = ./dotfiles/waybar/style.css;
 
+  # Backs the custom/netspeed module. Must be executable: waybar runs the
+  # "exec" string through /bin/sh -c, so a non-executable file fails silently
+  # as a permission error on the module rather than a startup error.
+  home.file.".config/waybar/netspeed.sh" = {
+    source = ./dotfiles/waybar/netspeed.sh;
+    executable = true;
+  };
+
   # Enable waybar package (but not the systemd service, since we start it from Hyprland)
   programs.waybar.enable = false;
 
@@ -156,10 +164,14 @@
       fi
     '';
 
+    # --icons=auto, NOT a bare --icons. eza made the flag's WHEN value optional
+    # (always|auto|never), so a bare `--icons` swallows the next argument as its
+    # value and `ls some/path/` dies with "invalid value ... for '--icons'".
+    # The = form binds the value to the flag and leaves paths alone.
     shellAliases = {
-      ls = "eza --icons";
-      ll = "eza -l --icons";
-      la = "eza -la --icons";
+      ls = "eza --icons=auto";
+      ll = "eza -l --icons=auto";
+      la = "eza -la --icons=auto";
     };
   };
 
@@ -219,8 +231,15 @@
   home.file.".config/brave-flags.conf".text = ''
     --ozone-platform=x11
   '';
+  # Chrome keeps the x11 pin above (middle-click paste is wanted here), which
+  # rules out the Wayland path where Chromium turns VAAPI on by default. Under
+  # X11/GL the decoder is behind VaapiVideoDecodeLinuxGL instead, so it has to
+  # be asked for explicitly. Verify at chrome://gpu -- "Video Decode" should
+  # read "Hardware accelerated". Note this covers H.264/VP9 only: UHD 620 has
+  # no AV1 decode block, so AV1 (much of YouTube) still lands on the CPU.
   home.file.".config/chrome-flags.conf".text = ''
     --ozone-platform=x11
+    --enable-features=VaapiVideoDecodeLinuxGL
   '';
 
   # =========================================================================

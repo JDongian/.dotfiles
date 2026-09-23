@@ -67,6 +67,10 @@
             imports = [ ./home.nix ];
             # Tile-specific monitor config (1920x1080)
             home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/tile-monitor.conf;
+            # Tile-specific terminal font size (gohufont 11px)
+            home.file.".config/foot/font.ini".source = ./dotfiles/foot/hosts/tile-font.ini;
+            # Tile-specific waybar font size (10px)
+            home.file.".config/waybar/font.css".source = ./dotfiles/waybar/hosts/tile-font.css;
           };
         }
       ];
@@ -97,6 +101,10 @@
             imports = [ ./home.nix ];
             # Gravel-specific monitor config (2560x1440)
             home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/gravel-monitor.conf;
+            # Gravel-specific terminal font size (gohufont 11px)
+            home.file.".config/foot/font.ini".source = ./dotfiles/foot/hosts/gravel-font.ini;
+            # Gravel-specific waybar font size (10px)
+            home.file.".config/waybar/font.css".source = ./dotfiles/waybar/hosts/gravel-font.css;
           };
         }
       ];
@@ -131,6 +139,13 @@
             # Obsidian-specific monitor config (2560x1440 WQHD)
             home.file.".config/hypr/monitor.conf".source =
               ./dotfiles/hypr/hosts/obsidian-monitor.conf;
+            # Obsidian-specific terminal font size: gohufont 14px, one bitmap
+            # step up from the 11px the other hosts use.
+            home.file.".config/foot/font.ini".source =
+              ./dotfiles/foot/hosts/obsidian-font.ini;
+            # Obsidian-specific waybar font size: 14px, matching the terminal.
+            home.file.".config/waybar/font.css".source =
+              ./dotfiles/waybar/hosts/obsidian-font.css;
           };
         }
       ];

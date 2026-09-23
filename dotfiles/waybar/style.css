@@ -1,5 +1,14 @@
+/* Host-specific bar font size lives in ~/.config/waybar/font.css, installed
+   per host from flake.nix -- same split as foot's font.ini and hypr's
+   monitor.conf.
+
+   Two constraints on this line: @import has to come before any rule (CSS
+   ignores a late @import), and nothing below may set font-size on * again,
+   because the imported sheet is inlined HERE and a later * rule would win on
+   source order. Hence font-family stays here and only the size moves out. */
+@import url("font.css");
+
 * {
-	font-size: 10px;
 	font-family: gohufont;
 }
 
@@ -29,6 +38,7 @@ window#waybar {
 #pulseaudio,
 #tray,
 #temperature,
+#custom-netspeed,
 #disk {
 	padding: 0 4px;
 }
