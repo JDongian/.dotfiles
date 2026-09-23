@@ -11,14 +11,23 @@
 set -euo pipefail
 
 DISK="${DISK:-/dev/nvme0n1}"
-REPO_SRC="/etc/nixos-repo"
+# The repo rides on the ISO FILESYSTEM, which the live system mounts at /iso.
+# isoImage.contents targets are relative to the ISO root, so a target of
+# "/etc/nixos-repo" lands at /iso/etc/nixos-repo once booted -- NOT at /etc,
+# which belongs to the live system. Getting this wrong was the first thing
+# that broke on the X1. Fall back to the other spellings just in case.
+REPO_SRC=""
+for cand in /iso/etc/nixos-repo /etc/nixos-repo /run/initramfs/live/etc/nixos-repo; do
+  [ -d "$cand" ] && { REPO_SRC="$cand"; break; }
+done
 MNT="/mnt"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "run as root (sudo $0)"
 [ -b "$DISK" ] || die "$DISK is not a block device. Set DISK=/dev/... if the internal disk enumerates differently (check: lsblk -d)."
-[ -d "$REPO_SRC" ] || die "$REPO_SRC missing — not booted from the obsidian installer ISO?"
+[ -n "$REPO_SRC" ] || die "config repo not found (looked in /iso/etc/nixos-repo, /etc/nixos-repo). Not booted from the obsidian installer ISO?"
+echo "==> Using config repo at $REPO_SRC"
 
 # --- Guard: never wipe the USB we booted from ------------------------------
 # Resolve the device backing the live medium and refuse if it matches $DISK.
@@ -61,8 +70,13 @@ cp -a "$REPO_SRC/." "$MNT/etc/nixos/"
 # present in the ISO payload; either way the copy above carries what exists.
 
 echo "==> Installing Wi-Fi profiles"
-wifi_src="$REPO_SRC/wifi-secrets"
-if [ -d "$wifi_src" ]; then
+# NOT from $REPO_SRC/wifi-secrets: that directory is gitignored, and the repo
+# baked into the ISO comes from flake `self`, which carries only git-tracked
+# files -- so the copy on the ISO has no profiles. The LIVE system does have
+# them (installer/iso.nix writes them into environment.etc), so copy from the
+# running system's own NetworkManager directory.
+wifi_src="/etc/NetworkManager/system-connections"
+if [ -d "$wifi_src" ] && compgen -G "$wifi_src/*.nmconnection" >/dev/null; then
   install -d -m 0700 "$MNT/etc/NetworkManager/system-connections"
   # -m 0600 is REQUIRED: NetworkManager ignores any profile that is
   # group- or world-readable, silently, with no error in the UI.
@@ -71,7 +85,7 @@ if [ -d "$wifi_src" ]; then
   n=$(find "$MNT/etc/NetworkManager/system-connections" -name '*.nmconnection' | wc -l)
   echo "    installed $n Wi-Fi profile(s)"
 else
-  echo "    none staged (run scripts/stage-wifi.sh before building the ISO)"
+  echo "    none found on the live system (ISO built without staged profiles?)"
 fi
 
 echo "==> Checking network (packages come from the binary cache)"

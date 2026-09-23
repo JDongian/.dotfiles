@@ -41,6 +41,13 @@
   # boot and narrow the rule if you want it tight.
   services.fprintd.enable = true;
 
+  # Dvorak. Note this DIFFERS from tile (QWERTY) -- set here rather than in
+  # the shared configuration.nix so tile is unaffected. console.keyMap covers
+  # the TTYs; the Wayland/Hyprland layout is separate and lives in the
+  # hyprland input block, so set XKB here for anything that reads it.
+  console.keyMap = "dvorak";
+  services.xserver.xkb.layout = "dvorak";
+
   # Intel thermal management. tile's power.nix flags thermald/TLP as a
   # deferred TODO; obsidian takes them from the start (gravel already did).
   services.thermald.enable = true;

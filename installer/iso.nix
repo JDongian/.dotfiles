@@ -39,6 +39,9 @@ in
     (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix")
   ];
 
+  # Dvorak on the live installer console too, matching the installed system.
+  console.keyMap = lib.mkForce "dvorak";
+
   isoImage.isoName = lib.mkForce "nixos-obsidian-installer.iso";
   isoImage.volumeID = lib.mkForce "OBSIDIAN_INST";
 
