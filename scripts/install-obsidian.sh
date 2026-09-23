@@ -53,7 +53,15 @@ read -rp "Type ERASE to continue: " confirm
 echo "==> Partitioning + encrypting via disko (you will set the LUKS passphrase)"
 # --mode disko = destroy, format, mount. Reads the layout from the embedded
 # repo, so the ESP/swap/root names match what hosts/obsidian expects.
-disko --mode disko "$REPO_SRC/disko-obsidian.nix" --argstr device "$DISK"
+# `disko` is NOT on the installer ISO -- it is a flake app, not a package in
+# the minimal profile. Run it via `nix run` (same approach install-gravel.sh
+# used). Prefer a local disko if one happens to be on PATH.
+if command -v disko >/dev/null 2>&1; then
+  disko --mode disko "$REPO_SRC/disko-obsidian.nix" --argstr device "$DISK"
+else
+  nix --experimental-features "nix-command flakes" run github:nix-community/disko -- \
+    --mode disko "$REPO_SRC/disko-obsidian.nix" --argstr device "$DISK"
+fi
 
 echo "==> Verifying disko produced the expected stable mapper names"
 # power.nix hardcodes /dev/mapper/cryptswap for resumeDevice. If that name is

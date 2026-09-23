@@ -17,7 +17,7 @@
 # obsidianSystem is accepted but currently unused -- see the payload note
 # below. Kept in the signature so re-enabling the offline closure is a
 # one-line change rather than a flake edit too.
-{ config, pkgs, lib, modulesPath, obsidianSystem, repoSrc, wifiDir ? null, ... }:
+{ config, pkgs, lib, modulesPath, inputs, obsidianSystem, repoSrc, wifiDir ? null, ... }:
 
 let
   # WHY wifiDir IS PASSED IN RATHER THAN READ FROM repoSrc:
@@ -87,6 +87,11 @@ in
     curl # install-obsidian.sh probes cache.nixos.org with it
     wpa_supplicant # CLI fallback if NetworkManager will not drive the radio
     iw # `iw dev <if> scan` to prove the radio works independently of NM
+    # disko is NOT in the minimal profile and is NOT a plain nixpkgs package
+    # here -- it comes from the flake input. Without this, the install script
+    # dies with "disko: command not found", and falling back to `nix run`
+    # would need network BEFORE partitioning even starts.
+    inputs.disko.packages.${pkgs.stdenv.hostPlatform.system}.disko
   ];
 
   # Wireless on the live ISO, so you can get online mid-install if you want to
