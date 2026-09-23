@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Install NixOS (host: obsidian) onto a ThinkPad X1 Carbon 7th gen.
 #
-# Runs from the custom installer ISO, fully OFFLINE: both the config repo and
-# the complete store closure are embedded in the image.
+# Runs from the custom installer ISO. The config repo and the saved Wi-Fi
+# profiles are embedded in the image; PACKAGES come from cache.nixos.org, so
+# this needs a network connection. The baked-in Wi-Fi profiles mean the ISO
+# normally associates with a known network by itself -- the script checks and
+# tells you what to do if it has not.
 #
 # DESTRUCTIVE: wipes the target disk entirely. Confirms before doing so.
 set -euo pipefail
@@ -71,14 +74,26 @@ else
   echo "    none staged (run scripts/stage-wifi.sh before building the ISO)"
 fi
 
-echo "==> Installing NixOS (offline, from the embedded closure)"
-# --no-channel-copy and the embedded closure keep this air-gapped.
+echo "==> Checking network (packages come from the binary cache)"
+if ! curl -fsS --max-time 10 https://cache.nixos.org/nix-cache-info >/dev/null 2>&1; then
+  echo
+  echo "    No route to cache.nixos.org."
+  echo "    The saved Wi-Fi profiles should have auto-connected. To fix by hand:"
+  echo "      nmcli device wifi list"
+  echo "      nmcli device wifi connect <SSID> [password <PSK>]"
+  echo "    Then re-run this script."
+  die "network required"
+fi
+echo "    cache reachable"
+
+echo "==> Installing NixOS"
+# The exact package REVISIONS are pinned by the flake.lock in the embedded
+# repo, so this installs the same versions verified on tile; only the delivery
+# is over the network.
 nixos-install \
   --root "$MNT" \
   --flake "$MNT/etc/nixos#obsidian" \
-  --no-root-password \
-  --option substituters "" \
-  --option binary-caches ""
+  --no-root-password
 
 echo "==> Post-install checks"
 # The installed kernel cmdline must carry resume= or hibernation is dead on

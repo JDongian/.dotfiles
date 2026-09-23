@@ -3,15 +3,20 @@
 # WHAT MAKES THIS DIFFERENT FROM A STOCK NixOS ISO:
 #   1. This repo is embedded at /etc/nixos on the live image, so the install
 #      needs no `git clone` and no network to fetch the config.
-#   2. The full store closure of the obsidian system is embedded too, so
-#      `nixos-install` runs entirely OFFLINE and installs exactly the revision
-#      that was tested here -- not whatever master happens to be that day.
+#   2. Package REVISIONS are pinned by the embedded flake.lock, so the install
+#      matches what was verified here rather than whatever master is that day.
+#      The packages themselves come from cache.nixos.org -- embedding the full
+#      closure was tried and abandoned (39.3 GiB closure -> 15.31 GiB ISO vs a
+#      14.65 GiB stick). See the payload note below.
 #   3. Saved Wi-Fi profiles are baked in (see wifiProfiles below).
 #
 # SECURITY: item 3 means THIS ISO, AND ANY USB WRITTEN FROM IT, CONTAINS
 # PLAINTEXT Wi-Fi PASSWORDS. Treat the USB as a secret-bearing object: anyone
 # holding it can read every saved PSK. The profiles come from the gitignored
 # wifi-secrets/ directory, so they are never committed to this public repo.
+# obsidianSystem is accepted but currently unused -- see the payload note
+# below. Kept in the signature so re-enabling the offline closure is a
+# one-line change rather than a flake edit too.
 { config, pkgs, lib, modulesPath, obsidianSystem, repoSrc, wifiDir ? null, ... }:
 
 let
@@ -37,14 +42,24 @@ in
   isoImage.isoName = lib.mkForce "nixos-obsidian-installer.iso";
   isoImage.volumeID = lib.mkForce "OBSIDIAN_INST";
 
-  # Compress hard: the embedded closure is the bulk of the image and the
-  # target USB is only 14.6 GB.
-  isoImage.squashfsCompression = "zstd -Xcompression-level 15";
+  # Default compression is fine now that the big closure is gone; -15 only
+  # cost build time.
+  isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
-  # --- The offline payload ---------------------------------------------------
-  # Putting the toplevel in the ISO's store makes `nixos-install --system`
-  # a pure copy: no substituters, no network, no surprise version drift.
-  isoImage.storeContents = [ obsidianSystem ];
+  # --- Payload ---------------------------------------------------------------
+  # NOT embedding the obsidian system closure. It was tried (2026-09-22) and
+  # the resulting ISO came to 15.31 GiB against a 14.65 GiB stick -- the full
+  # desktop closure (hyprland, texlive, ...) simply does not fit. Check
+  # `nix path-info -Sh .#nixosConfigurations.obsidian.config.system.build.toplevel`
+  # before considering it again; it needs a >=32 GB USB.
+  #
+  # Consequence: the install is NOT air-gapped -- nixos-install pulls from
+  # cache.nixos.org. That is fine because the Wi-Fi profiles below are baked
+  # in, so the X1 associates with a known network on boot and the install
+  # proceeds unattended. flake.lock is in the embedded repo, so the installed
+  # system is still pinned to the exact revision verified here; only the
+  # DELIVERY of those paths is over the network, not their identity.
+  # isoImage.storeContents = [ obsidianSystem ];
 
   # The repo itself, so /etc/nixos on the INSTALLED machine is a real checkout
   # and `nixos-rebuild` works immediately after first boot.
@@ -62,6 +77,7 @@ in
     parted
     cryptsetup
     gptfdisk
+    curl # install-obsidian.sh probes cache.nixos.org with it
   ];
 
   # Wireless on the live ISO, so you can get online mid-install if you want to
@@ -103,8 +119,11 @@ in
     │                                                              │
     │  Run:  sudo /etc/install-obsidian.sh                         │
     │                                                              │
-    │  WIPES /dev/nvme0n1 and installs NixOS offline.              │
+    │  WIPES /dev/nvme0n1 and installs NixOS.                      │
     │  You will be asked to set the LUKS passphrase.               │
+    │                                                              │
+    │  Needs network — saved Wi-Fi should connect automatically.   │
+    │  Check with:  nmcli device wifi list                         │
     ╰──────────────────────────────────────────────────────────────╯
   '';
 
