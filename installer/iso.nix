@@ -74,6 +74,10 @@ in
   ];
 
   # --- Live environment ------------------------------------------------------
+  # Intel wifi firmware. The X1C7 has an AX200/9560 needing iwlwifi blobs;
+  # the minimal installation-cd profile does not guarantee them.
+  hardware.enableRedistributableFirmware = true;
+
   environment.systemPackages = with pkgs; [
     git
     vim
@@ -81,12 +85,28 @@ in
     cryptsetup
     gptfdisk
     curl # install-obsidian.sh probes cache.nixos.org with it
+    wpa_supplicant # CLI fallback if NetworkManager will not drive the radio
+    iw # `iw dev <if> scan` to prove the radio works independently of NM
   ];
 
   # Wireless on the live ISO, so you can get online mid-install if you want to
   # (the install itself does not need it).
+  # NetworkManager owns the radio. Do NOT add
+  # `networking.wireless.enable = lib.mkForce false` here: that removes
+  # wpa_supplicant ENTIRELY (package and D-Bus service), and NM drives wifi
+  # THROUGH wpa_supplicant. The result on the X1 (2026-09-22) was a wifi
+  # device stuck at "unavailable" with nothing rfkill-blocked and the
+  # firmware loaded fine -- NM logged "failed to D-Bus activate wpa" and
+  # parked the interface. The installation-cd profile already leaves
+  # wireless.enable off by default, so NM's own wpa_supplicant dependency is
+  # all that is needed; forcing it false is what broke it.
   networking.networkmanager.enable = true;
-  networking.wireless.enable = lib.mkForce false; # NM owns the radio
+
+  # networking.wireless.enable is deliberately NOT set here. Enabling
+  # NetworkManager already sets it to true (see nixos/modules/services/
+  # networking/networkmanager.nix), which is what puts wpa_supplicant and its
+  # D-Bus service on the image. Setting it false -- even with mkForce -- takes
+  # wpa_supplicant away and leaves NM unable to drive the radio at all.
 
   # /etc contents for the LIVE system: the install script, plus the saved
   # Wi-Fi profiles so the installer environment itself auto-connects to known
