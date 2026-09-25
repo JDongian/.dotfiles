@@ -200,6 +200,7 @@ in
     dig
     ngrok
     nmap
+    sshfs
 
     # =========================================================================
     # Documentation & Publishing

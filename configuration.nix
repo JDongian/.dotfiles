@@ -10,6 +10,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 32;
   boot.loader.systemd-boot.consoleMode = "keep";
+  # Boot menu timeout. NixOS defaults to 5s; 1s is long enough to catch the
+  # menu with an arrow key when you need an older generation, without
+  # sitting through it on every normal boot.
+  boot.loader.timeout = 1;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # NOTE: Power management (powerManagement.enable, swapDevices, hibernation

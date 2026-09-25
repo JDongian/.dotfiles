@@ -16,5 +16,8 @@
     # All power management (suspend/hibernate/lid/resume/charge), ported from
     # tile with obsidian's stable device paths substituted.
     ./power.nix
+
+    # sshfs mount of tile:~/tmp/shared (on-demand, over Tailscale)
+    ./sshfs.nix
   ];
 }

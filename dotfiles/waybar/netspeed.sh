@@ -101,9 +101,12 @@ while :; do
     "$(fmt "$up_rate")"   "$(fmt $(( up_rate * 8 )))" \
     "$(fmt "$rx")" "$(fmt "$tx")")
 
-  # %4s pads each figure to the 4-column max above, so the modules to the
-  # left of this one hold still as the rate changes width.
-  printf '{"text":"↓%4s ↑%4s","tooltip":"%s","class":"connected"}\n' \
+  # No manual padding here: %4s right-aligned each figure, so a 4-character
+  # value got no leading space and a 3-character one got a space -- the gap
+  # after each arrow visibly changed with the rate. Width stability now comes
+  # from "min-length" on the module (waybar maps it to GTK width_chars), which
+  # reserves space WITHOUT putting characters into the string.
+  printf '{"text":"↓%s ↑%s","tooltip":"%s","class":"connected"}\n' \
     "$down" "$up" "$tooltip"
 
   sleep "$interval"

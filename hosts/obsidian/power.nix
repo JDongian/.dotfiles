@@ -97,14 +97,46 @@
     }
   ];
 
-  # --- Lid close: suspend ----------------------------------------------------
+  # --- Lid close: suspend-then-hibernate -------------------------------------
   # Renamed in nixos-unstable: lidSwitch → settings.Login.HandleLidSwitch.
-  # Anchored to the March 2026 (860b561) behavior: plain suspend on lid close,
-  # with hibernation driven by the low-battery timer below. The 2026-06-04
-  # refactor had switched this to suspend-then-hibernate, which depends on a
-  # working resume path — and resume was broken (see the hibernation note
-  # above). Reverting to suspend + the timer restores the known-good setup.
-  services.logind.settings.Login.HandleLidSwitch = "suspend";
+  #
+  # CHANGED 2026-09-24, on obsidian ONLY (tile stays on plain "suspend" until
+  # this is proven here).
+  #
+  # WHAT THIS FIXES: the low-battery timer below does not run while the system
+  # is in S3, so a lid-closed laptop that drained flat never hibernated and the
+  # session was lost. That timer covers the AWAKE case; this covers the ASLEEP
+  # case. They complement each other — keep both.
+  #
+  # WHY IT IS SAFE TO ENABLE NOW. The 2026-06-04 refactor set exactly this and
+  # was reverted because suspend-then-hibernate depends on a working resume
+  # path and resume was broken at the time. That condition no longer holds:
+  #   - tile: 14 `PM: hibernation: hibernation exit` events, Sep 4-18 2026
+  #     (see the hibernation note above)
+  #   - obsidian: hibernate + resume exercised on the current boot
+  # Verify before trusting it further — see RISK below.
+  #
+  # WHY NO HibernateDelaySec. systemd 261 (>= 253) makes suspend-then-hibernate
+  # battery-aware when the delay is left UNSET: it sets an RTC alarm, wakes,
+  # measures the actual discharge rate, and hibernates when the battery is
+  # nearly gone. A fixed delay would be a guess at that instead. Leaving
+  # sleep.conf at its defaults is the feature, not an omission.
+  #
+  # The fingerprint sleep hooks further down already list
+  # systemd-suspend-then-hibernate.service in wantedBy/before/after, so the
+  # reader re-arms on this path exactly as it does on plain suspend.
+  #
+  # RISK / VERIFICATION: close the lid on battery and leave it long enough to
+  # cross the hibernate point, then confirm on wake:
+  #   journalctl -b | grep -E "hibernation exit|Finished Resume from hibernation"
+  # and that the session and lock screen came back intact. If resume ever
+  # regresses, set this back to "suspend" — the low-battery timer alone is the
+  # known-good fallback.
+  services.logind.settings.Login.HandleLidSwitch = "suspend-then-hibernate";
+
+  # On wall power there is no battery to run out, so plain suspend: no periodic
+  # wake-ups, and an instant resume when the lid opens.
+  services.logind.settings.Login.HandleLidSwitchExternalPower = "suspend";
 
   # --- Lock-screen responsiveness (InhibitDelayMaxSec) -----------------------
   # Cuts the visible "warning screen" gap between hyprlock starting and the
@@ -138,10 +170,19 @@
   # (those are ordered systemd units, not inhibitors).
   services.logind.settings.Login.InhibitDelayMaxSec = 1;
 
-  # Hibernate when the battery is critically low and on battery power. This is
-  # the actual hibernate trigger in the March-anchored setup (the lid only
-  # suspends). If hibernate fails (e.g. swap space issue), falls back to
-  # suspend so the machine at least stops draining battery.
+  # Two-stage low-battery response, on battery power only:
+  #
+  #   <= 5%  rest the screen  — lock the session and DPMS the panel off. Buys
+  #                             runtime at the point where every watt counts,
+  #                             and makes the state obvious if you look over.
+  #   <= 4%  hibernate        — the actual save-your-work action.
+  #
+  # WHY 5% RESTS THE SCREEN RATHER THAN SUSPENDING: this timer does not run
+  # while the system is in S3 (the KNOWN LIMITATION below). Suspending at 5%
+  # would therefore freeze the timer and the 4% hibernate would NEVER fire --
+  # the machine would sit in S3 until the battery died outright and the RAM
+  # image was lost. Blanking the panel keeps the system running, so the 4%
+  # check still happens.
   #
   # KNOWN LIMITATION: this timer is frozen while the system is in S3, so a
   # lid-closed laptop that drains entirely while asleep never fires it.
@@ -154,17 +195,59 @@
   # priority 10 (highest) — paging fills the swapfile; partition stays empty.
   # Fallback: if hibernate still fails, the script suspends instead of dying.
   systemd.services.hibernate-on-low-battery = {
-    description = "Hibernate when battery is critically low";
+    description = "Rest the screen at 5% battery, hibernate at 4%";
     after = [ "multi-user.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c 'if [ $(cat /sys/class/power_supply/BAT*/capacity) -le 5 ] && [ $(cat /sys/class/power_supply/AC*/online) -eq 0 ]; then /run/current-system/sw/bin/systemctl hibernate || /run/current-system/sw/bin/systemctl suspend; fi'";
+      ExecStart = pkgs.writeShellScript "low-battery-action" ''
+        set -u
+        bin=/run/current-system/sw/bin
+
+        cap=$(cat /sys/class/power_supply/BAT0/capacity)
+        ac=$(cat /sys/class/power_supply/AC*/online | head -1)
+
+        # Stamp so the 5% action fires ONCE per descent rather than every
+        # minute; cleared as soon as we are back on AC or back above 5%.
+        stamp=/run/low-battery-screen-rested
+
+        if [ "$ac" -ne 0 ] || [ "$cap" -gt 5 ]; then
+          # Back on power or recovered: undo the 5% dim, if we did one.
+          if [ -e "$stamp" ]; then
+            $bin/brightnessctl -r || true
+            rm -f "$stamp"
+          fi
+          exit 0
+        fi
+
+        if [ "$cap" -le 4 ]; then
+          $bin/systemctl hibernate || $bin/systemctl suspend
+          exit 0
+        fi
+
+        # 5%: lock, then take the backlight to zero.
+        [ -e "$stamp" ] && exit 0
+        touch "$stamp"
+
+        $bin/loginctl lock-sessions || true
+
+        # NOT `hyprctl dispatch dpms off`. A dpms-off listener was removed from
+        # hypridle.conf on 2026-06-04 because it crashed the entire Hyprland
+        # session (SIGABRT -> full session loss -> greetd relogin), a known
+        # Hyprland bug where powering the display off races output teardown.
+        # That is a bad trade anywhere, but it is a terrible one HERE: losing
+        # the session at 5% destroys exactly the unsaved work that hibernating
+        # at 4% exists to protect. brightnessctl -s (save) + set 0 darkens the
+        # panel just as effectively with no such risk, and mirrors the
+        # dim-to-10% mitigation hypridle.conf already relies on. Restored by
+        # the `brightnessctl -r` in the reset branch above.
+        $bin/brightnessctl -s set 0 || true
+      '';
     };
   };
 
   systemd.timers.hibernate-on-low-battery = {
-    description = "Check battery percentage and hibernate if needed";
+    description = "Check battery percentage for the low-battery actions";
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnUnitActiveSec = "1min"; # Check every minute

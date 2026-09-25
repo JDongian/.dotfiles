@@ -108,6 +108,33 @@
     executable = true;
   };
 
+  # Backs custom/diskio. Replaces the old iostat-based module, which could not
+  # have worked: BusyBox iostat has no -x, and it matched ^sda on an NVMe box.
+  home.file.".config/waybar/diskio.sh" = {
+    source = ./dotfiles/waybar/diskio.sh;
+    executable = true;
+  };
+
+  # Tailscale's own logo (client/systray/tailscale.svg, BSD-3-Clause), the
+  # background rect stripped and rendered to PNG in two states.
+  home.file.".config/waybar/icons" = {
+    source = ./dotfiles/waybar/icons;
+    recursive = true;
+  };
+
+  # Backs image#tailscale. Reads `tailscale status --json` unprivileged.
+  home.file.".config/waybar/tailscale.sh" = {
+    source = ./dotfiles/waybar/tailscale.sh;
+    executable = true;
+  };
+
+  # Backs custom/language. Replaces waybar's hyprland/language module, which
+  # has no tooltip support, so the switch hotkey could not be shown on hover.
+  home.file.".config/waybar/language.sh" = {
+    source = ./dotfiles/waybar/language.sh;
+    executable = true;
+  };
+
   # Enable waybar package (but not the systemd service, since we start it from Hyprland)
   programs.waybar.enable = false;
 

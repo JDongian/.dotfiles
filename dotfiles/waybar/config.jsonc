@@ -27,15 +27,16 @@
     ],
     "modules-right": [
         "custom/netspeed",
+        "image#tailscale",
         "temperature",
         "disk",
         "custom/swap",
         "memory",
         "cpu",
-        "custom/iops",
-        "custom/keyboard-layout",
+        "custom/diskio",
         "backlight",
         "tray",
+        "custom/language",
         "battery",
         "clock",
     ],
@@ -51,19 +52,38 @@
         "on-scroll-down": "hyprctl dispatch workspace e-1"
     },
 
+    // Glyphs are the Nerd Fonts Material Design battery_* series -- the SAME
+    // set hyprlock.conf:91 uses, so the bar and the lock screen finally speak
+    // one battery language instead of block characters here and MDI there.
+    //
+    // WHY FOUR SEPARATE FORMATS, not one: waybar reports status "plugged"
+    // whenever AC is online and the battery is not discharging (battery.cpp:
+    // `if (online && current_status != "Discharging") status = "Plugged"`).
+    // With TLP's 40/80 charge thresholds this machine sits in exactly that
+    // state most of the time -- sysfs literally reads "Not charging" at 43%.
+    // The old single `format` drew a charging BOLT there, i.e. a bolt on a
+    // battery that is deliberately not charging. "plugged" gets a power-plug
+    // glyph and the true level instead.
     "battery": {
         "interval": 10,
         "states": {
             "warning": 30,
             "critical": 15
         },
-        // Connected to AC
-        "format": "  {icon}  {capacity}%", // Icon: bolt
-        // Not connected to AC
-        "format-discharging": "{icon}  {capacity}%",
-        "format-icons": [
-	    "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"
-        ],
+        "format": "{icon} {capacity}%",
+        "format-charging": "{icon} {capacity}%",
+        "format-plugged": "󰚥 {icon} {capacity}%",
+        "format-full": "󰚥 {icon} {capacity}%",
+        "format-discharging": "{icon} {capacity}%",
+        // Object keyed by status. waybar resolves "<status>-<state>", then
+        // "<status>", then "<state>", then "default" -- so plugged / full /
+        // discharging all land on "default" and show the REAL charge level.
+        // The charging ramp has the bolt drawn into the glyph already.
+        "format-icons": {
+            "charging": ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"],
+            "default": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+        },
+        "tooltip-format": "{capacity}% \u00b7 {timeTo}\n{cycles} cycles",
         "tooltip": true
     },
 
@@ -88,14 +108,30 @@
         "path": "/"
     },
 
-    "custom/keyboard-layout": {
-      "exec": "swaymsg -t get_inputs | grep -m1 'xkb_active_layout_name' | cut -d '\"' -f4",
-      // Interval set only as a fallback, as the value is updated by signal
-      "interval": 30,
-      "format": "  {}", // Icon: keyboard
-      // Signal sent by Sway key binding (~/.config/sway/key-bindings)
-      "signal": 1, // SIGHUP
-      "tooltip": false
+    // Layout indicator. hyprland.conf:153 defines two groups -- us(dvorak)
+    // and plain us -- and Super+Shift+Space cycles them.
+    //
+    // The override keys are "format-<shortDescription>-<variant>" then
+    // "format-<shortDescription>" (language.cpp). Both groups are English, so
+    // shortDescription is "en" for both and {short} would render "us" either
+    // way -- useless here. The variant is what distinguishes them: "dvorak"
+    // vs empty. So Dvorak hits format-en-dvorak and plain US falls through to
+    // format-en. Because an override always matches, `format` is applied
+    // POSITIONALLY and must use {} -- named args like {variant} would throw.
+    //
+    // REPLACES custom/keyboard-layout, which shelled out to `swaymsg` on a
+    // Hyprland box and had only ever printed "command not found".
+    // Layout indicator, with the switch hotkey shown on hover.
+    //
+    // NOT the built-in hyprland/language module: that one cannot show a
+    // tooltip at all -- it never calls set_tooltip, and ALabel (which it
+    // inherits) has no tooltip machinery, so tooltip-format on it is silently
+    // ignored. See language.sh.
+    "custom/language": {
+        "exec": "~/.config/waybar/language.sh",
+        "return-type": "json",
+        "restart-interval": 5,
+        "tooltip": true
     },
 
     "memory": {
@@ -188,17 +224,35 @@
     // No "interval" key on purpose -- the script loops and prints a line every
     // 2s, which is how waybar identifies a continuous module. restart-interval
     // relaunches it if it ever exits.
+    // Tailscale backend state; exit-node name shown in the bar when one is
+    // in use, since that silently changes what netspeed's numbers mean.
+    // Tailscale's actual logo, vendored from their systray client. This is an
+    // `image` module, not custom/: image reads two lines from exec -- path,
+    // then tooltip -- which is the only way to get a real image into the bar
+    // (Pango markup in a label cannot embed one).
+    "image#tailscale": {
+        "exec": "~/.config/waybar/tailscale.sh",
+        "size": 16,
+        "interval": 10,
+        "tooltip": true
+    },
+
     "custom/netspeed": {
         "exec": "~/.config/waybar/netspeed.sh 2",
         "return-type": "json",
         "restart-interval": 5,
+        "min-length": 11,
         "tooltip": true
     },
 
-    "custom/iops": {
-        "interval": 5,
-        "exec": "iostat -dx | awk '/^sda/ {print $4 \"/\" $5}'",
-        "format": "IOPS {}"
+    // Disk IOPS, read/write. See diskio.sh for why the old iostat-based
+    // module never worked on this host.
+    "custom/diskio": {
+        "exec": "~/.config/waybar/diskio.sh 5",
+        "return-type": "json",
+        "restart-interval": 5,
+        "min-length": 8,
+        "tooltip": true
     },
     "custom/swap": {
         "interval": 5,

@@ -8,8 +8,10 @@
    source order. Hence font-family stays here and only the size moves out. */
 @import url("font.css");
 
+/* gohufont carries no Nerd Font glyphs, so the MDI battery icons resolve
+   through the fallbacks named here rather than by fontconfig luck. */
 * {
-	font-family: gohufont;
+	font-family: gohufont, "Symbols Nerd Font", "Font Awesome 6 Free";
 }
 
 window#waybar {
@@ -17,15 +19,34 @@ window#waybar {
 	color: #fdf6e3;
 }
 
+/* Workspace buttons. The active one gets a FILLED block, not just recoloured
+   text -- at gohufont's weight a colour swap alone is easy to miss.
+   The explicit border/border-radius/box-shadow resets matter: these are GTK
+   buttons and carry default chrome (focus ring, inset shadow) that otherwise
+   shows through once a background is set. padding has to be non-zero or the
+   fill hugs the glyph with no breathing room. */
 #workspaces button {
-	padding: 0;
+	padding: 0 6px;
+	margin: 0;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
 	color: #fdf6e3;
 }
 #workspaces button.active {
-	color: #268bd2;
+	background: #303030;
+	color: #fdf6e3;
 }
 #workspaces button.urgent {
-	color: #dc322f;
+	background: #dc322f;
+	color: #000000;
+}
+#workspaces button:hover {
+	background: #1a1a1a;
+	color: #fdf6e3;
+	box-shadow: none;
+	text-shadow: none;
 }
 
 #memory,
@@ -38,7 +59,35 @@ window#waybar {
 #pulseaudio,
 #tray,
 #temperature,
+#image,
 #custom-netspeed,
+#custom-diskio,
+#custom-tailscale,
+#custom-language,
 #disk {
 	padding: 0 4px;
+}
+
+/* Tailscale state colours. Classes come from the script's JSON "class" field:
+   up = healthy (stays with the bar foreground, no shouting), exit = traffic is
+   leaving via an exit node, offline/stopped = backend down, error = tailscaled
+   unreachable or needs login. */
+#custom-tailscale.up {
+	color: #fdf6e3;
+}
+#custom-tailscale.exit {
+	color: #b58900;
+}
+#custom-tailscale.offline,
+#custom-tailscale.stopped {
+	color: #586e75;
+}
+#custom-tailscale.error {
+	color: #dc322f;
+}
+
+/* The image module seats its pixbuf toward the top of the bar rather than
+   centering it the way a text label sits on its baseline, so nudge it down. */
+#image {
+	margin-top: 3px;
 }
