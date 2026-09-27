@@ -11,7 +11,7 @@
 /* gohufont carries no Nerd Font glyphs, so the MDI battery icons resolve
    through the fallbacks named here rather than by fontconfig luck. */
 * {
-	font-family: gohufont, "Symbols Nerd Font", "Font Awesome 6 Free";
+	font-family: gohufont, "Symbols Nerd Font", "Noto Emoji", "Font Awesome 6 Free";
 }
 
 window#waybar {
@@ -49,22 +49,14 @@ window#waybar {
 	text-shadow: none;
 }
 
-#memory,
 #cpu,
 #battery,
 #clock,
-#backlight,
-#bluetooth,
-#pulseaudio,
-#pulseaudio,
 #tray,
 #temperature,
 #image,
 #custom-netspeed,
-#custom-diskio,
-#custom-tailscale,
-#custom-language,
-#disk {
+#custom-language {
 	padding: 0 4px;
 }
 
@@ -86,26 +78,280 @@ window#waybar {
 #backlight.b80  { background: #a89c72; color: #000000; }
 #backlight.b100 { background: #fdf6e3; color: #000000; }
 
-/* Tailscale state colours. Classes come from the script's JSON "class" field:
-   up = healthy (stays with the bar foreground, no shouting), exit = traffic is
-   leaving via an exit node, offline/stopped = backend down, error = tailscaled
-   unreachable or needs login. */
-#custom-tailscale.up {
-	color: #fdf6e3;
-}
-#custom-tailscale.exit {
-	color: #b58900;
-}
-#custom-tailscale.offline,
-#custom-tailscale.stopped {
-	color: #586e75;
-}
-#custom-tailscale.error {
-	color: #dc322f;
-}
-
 /* The image module seats its pixbuf toward the top of the bar rather than
    centering it the way a text label sits on its baseline, so nudge it down. */
 #image {
 	margin-top: 3px;
 }
+
+
+/* Combined CPU% + temperature: each number carries its own shaded background,
+   rendered as two adjacent cells reading like "2% 61C". Discrete buckets
+   (waybar states) approximate a continuous ramp. */
+/* CPU load: transparent -> cream(white) as it climbs to 100%. */
+#cpu            { background: #000000; color: #ffffff; }
+#cpu.c20        { background: #333333; color: #ffffff; }
+#cpu.c40        { background: #666666; color: #ffffff; }
+#cpu.c60        { background: #999999; color: #000000; }
+#cpu.c80        { background: #cccccc; color: #000000; }
+#cpu.c100       { background: #ffffff; color: #000000; }
+/* Temperature: transparent at room temp, yellow -> orange -> red (#FF0000)
+   with rising opacity. ~61C lands in t70: a mostly-transparent yellow. */
+#temperature        { background: transparent; color: #fdf6e3; }
+#temperature.t50    { background: rgba(255,225,0,0.10); }
+#temperature.t60    { background: rgba(255,220,0,0.18); }
+#temperature.t70    { background: rgba(255,205,0,0.28); }
+#temperature.t80    { background: rgba(255,140,0,0.50); color: #000000; }
+#temperature.t90    { background: rgba(255,70,0,0.74);  color: #000000; }
+#temperature.t100   { background: rgba(255,0,0,0.95);   color: #000000; }
+
+/* RAM cell doubles as the swap indicator (custom/swap removed). No swap in use
+   -> grayscale by RAM% (black -> white, matching CPU). Any swap in use -> the
+   whole cell flips to yellow (just started swapping) -> red (100% swap used). */
+#custom-ram          { background: #000000; color: #ffffff; padding: 0 4px; }
+#custom-ram.g0r0 { background: rgb(0,0,0); }
+#custom-ram.g0r10 { background: rgb(11,0,0); }
+#custom-ram.g0r20 { background: rgb(22,0,0); }
+#custom-ram.g0r30 { background: rgb(34,0,0); }
+#custom-ram.g0r40 { background: rgb(45,0,0); }
+#custom-ram.g0r50 { background: rgb(56,0,0); }
+#custom-ram.g0r60 { background: rgb(67,0,0); }
+#custom-ram.g0r70 { background: rgb(78,0,0); }
+#custom-ram.g0r80 { background: rgb(90,0,0); }
+#custom-ram.g0r90 { background: rgb(101,0,0); }
+#custom-ram.g0r100 { background: rgb(112,0,0); }
+#custom-ram.g10r0 { background: rgb(0,11,0); }
+#custom-ram.g10r10 { background: rgb(11,11,0); }
+#custom-ram.g10r20 { background: rgb(22,11,0); }
+#custom-ram.g10r30 { background: rgb(34,11,0); }
+#custom-ram.g10r40 { background: rgb(45,11,0); }
+#custom-ram.g10r50 { background: rgb(56,11,0); }
+#custom-ram.g10r60 { background: rgb(67,11,0); }
+#custom-ram.g10r70 { background: rgb(78,11,0); }
+#custom-ram.g10r80 { background: rgb(90,11,0); }
+#custom-ram.g10r90 { background: rgb(101,11,0); }
+#custom-ram.g10r100 { background: rgb(112,11,0); }
+#custom-ram.g20r0 { background: rgb(0,22,0); }
+#custom-ram.g20r10 { background: rgb(11,22,0); }
+#custom-ram.g20r20 { background: rgb(22,22,0); }
+#custom-ram.g20r30 { background: rgb(34,22,0); }
+#custom-ram.g20r40 { background: rgb(45,22,0); }
+#custom-ram.g20r50 { background: rgb(56,22,0); }
+#custom-ram.g20r60 { background: rgb(67,22,0); }
+#custom-ram.g20r70 { background: rgb(78,22,0); }
+#custom-ram.g20r80 { background: rgb(90,22,0); }
+#custom-ram.g20r90 { background: rgb(101,22,0); }
+#custom-ram.g20r100 { background: rgb(112,22,0); }
+#custom-ram.g30r0 { background: rgb(0,34,0); }
+#custom-ram.g30r10 { background: rgb(11,34,0); }
+#custom-ram.g30r20 { background: rgb(22,34,0); }
+#custom-ram.g30r30 { background: rgb(34,34,0); }
+#custom-ram.g30r40 { background: rgb(45,34,0); }
+#custom-ram.g30r50 { background: rgb(56,34,0); }
+#custom-ram.g30r60 { background: rgb(67,34,0); }
+#custom-ram.g30r70 { background: rgb(78,34,0); }
+#custom-ram.g30r80 { background: rgb(90,34,0); }
+#custom-ram.g30r90 { background: rgb(101,34,0); }
+#custom-ram.g30r100 { background: rgb(112,34,0); }
+#custom-ram.g40r0 { background: rgb(0,45,0); }
+#custom-ram.g40r10 { background: rgb(11,45,0); }
+#custom-ram.g40r20 { background: rgb(22,45,0); }
+#custom-ram.g40r30 { background: rgb(34,45,0); }
+#custom-ram.g40r40 { background: rgb(45,45,0); }
+#custom-ram.g40r50 { background: rgb(56,45,0); }
+#custom-ram.g40r60 { background: rgb(67,45,0); }
+#custom-ram.g40r70 { background: rgb(78,45,0); }
+#custom-ram.g40r80 { background: rgb(90,45,0); }
+#custom-ram.g40r90 { background: rgb(101,45,0); }
+#custom-ram.g40r100 { background: rgb(112,45,0); }
+#custom-ram.g50r0 { background: rgb(0,56,0); }
+#custom-ram.g50r10 { background: rgb(11,56,0); }
+#custom-ram.g50r20 { background: rgb(22,56,0); }
+#custom-ram.g50r30 { background: rgb(34,56,0); }
+#custom-ram.g50r40 { background: rgb(45,56,0); }
+#custom-ram.g50r50 { background: rgb(56,56,0); }
+#custom-ram.g50r60 { background: rgb(67,56,0); }
+#custom-ram.g50r70 { background: rgb(78,56,0); }
+#custom-ram.g50r80 { background: rgb(90,56,0); }
+#custom-ram.g50r90 { background: rgb(101,56,0); }
+#custom-ram.g50r100 { background: rgb(112,56,0); }
+#custom-ram.g60r0 { background: rgb(0,67,0); }
+#custom-ram.g60r10 { background: rgb(11,67,0); }
+#custom-ram.g60r20 { background: rgb(22,67,0); }
+#custom-ram.g60r30 { background: rgb(34,67,0); }
+#custom-ram.g60r40 { background: rgb(45,67,0); }
+#custom-ram.g60r50 { background: rgb(56,67,0); }
+#custom-ram.g60r60 { background: rgb(67,67,0); }
+#custom-ram.g60r70 { background: rgb(78,67,0); }
+#custom-ram.g60r80 { background: rgb(90,67,0); }
+#custom-ram.g60r90 { background: rgb(101,67,0); }
+#custom-ram.g60r100 { background: rgb(112,67,0); }
+#custom-ram.g70r0 { background: rgb(0,78,0); }
+#custom-ram.g70r10 { background: rgb(11,78,0); }
+#custom-ram.g70r20 { background: rgb(22,78,0); }
+#custom-ram.g70r30 { background: rgb(34,78,0); }
+#custom-ram.g70r40 { background: rgb(45,78,0); }
+#custom-ram.g70r50 { background: rgb(56,78,0); }
+#custom-ram.g70r60 { background: rgb(67,78,0); }
+#custom-ram.g70r70 { background: rgb(78,78,0); }
+#custom-ram.g70r80 { background: rgb(90,78,0); }
+#custom-ram.g70r90 { background: rgb(101,78,0); }
+#custom-ram.g70r100 { background: rgb(112,78,0); }
+#custom-ram.g80r0 { background: rgb(0,90,0); }
+#custom-ram.g80r10 { background: rgb(11,90,0); }
+#custom-ram.g80r20 { background: rgb(22,90,0); }
+#custom-ram.g80r30 { background: rgb(34,90,0); }
+#custom-ram.g80r40 { background: rgb(45,90,0); }
+#custom-ram.g80r50 { background: rgb(56,90,0); }
+#custom-ram.g80r60 { background: rgb(67,90,0); }
+#custom-ram.g80r70 { background: rgb(78,90,0); }
+#custom-ram.g80r80 { background: rgb(90,90,0); }
+#custom-ram.g80r90 { background: rgb(101,90,0); }
+#custom-ram.g80r100 { background: rgb(112,90,0); }
+#custom-ram.g90r0 { background: rgb(0,101,0); }
+#custom-ram.g90r10 { background: rgb(11,101,0); }
+#custom-ram.g90r20 { background: rgb(22,101,0); }
+#custom-ram.g90r30 { background: rgb(34,101,0); }
+#custom-ram.g90r40 { background: rgb(45,101,0); }
+#custom-ram.g90r50 { background: rgb(56,101,0); }
+#custom-ram.g90r60 { background: rgb(67,101,0); }
+#custom-ram.g90r70 { background: rgb(78,101,0); }
+#custom-ram.g90r80 { background: rgb(90,101,0); }
+#custom-ram.g90r90 { background: rgb(101,101,0); }
+#custom-ram.g90r100 { background: rgb(112,101,0); }
+#custom-ram.g100r0 { background: rgb(0,112,0); }
+#custom-ram.g100r10 { background: rgb(11,112,0); }
+#custom-ram.g100r20 { background: rgb(22,112,0); }
+#custom-ram.g100r30 { background: rgb(34,112,0); }
+#custom-ram.g100r40 { background: rgb(45,112,0); }
+#custom-ram.g100r50 { background: rgb(56,112,0); }
+#custom-ram.g100r60 { background: rgb(67,112,0); }
+#custom-ram.g100r70 { background: rgb(78,112,0); }
+#custom-ram.g100r80 { background: rgb(90,112,0); }
+#custom-ram.g100r90 { background: rgb(101,112,0); }
+#custom-ram.g100r100 { background: rgb(112,112,0); }  /* terminal (RAM+swap full): #707000 */
+
+/* Combined disk cell: reads -> cyan (0,255,255), writes -> red (255,0,0),
+   each via a sigmoid of IOPS (see diskio.sh). Idle = black; icon stays white. */
+#custom-diskio       { background: #000000; color: #ffffff; padding: 0 4px; }
+#custom-diskio.rd0wr0 { background: rgb(0,0,0); }
+#custom-diskio.rd0wr10 { background: rgb(11,0,0); }
+#custom-diskio.rd0wr20 { background: rgb(22,0,0); }
+#custom-diskio.rd0wr30 { background: rgb(34,0,0); }
+#custom-diskio.rd0wr40 { background: rgb(45,0,0); }
+#custom-diskio.rd0wr50 { background: rgb(56,0,0); }
+#custom-diskio.rd0wr60 { background: rgb(67,0,0); }
+#custom-diskio.rd0wr70 { background: rgb(78,0,0); }
+#custom-diskio.rd0wr80 { background: rgb(90,0,0); }
+#custom-diskio.rd0wr90 { background: rgb(101,0,0); }
+#custom-diskio.rd0wr100 { background: rgb(112,0,0); }
+#custom-diskio.rd10wr0 { background: rgb(0,11,11); }
+#custom-diskio.rd10wr10 { background: rgb(11,11,11); }
+#custom-diskio.rd10wr20 { background: rgb(22,11,11); }
+#custom-diskio.rd10wr30 { background: rgb(34,11,11); }
+#custom-diskio.rd10wr40 { background: rgb(45,11,11); }
+#custom-diskio.rd10wr50 { background: rgb(56,11,11); }
+#custom-diskio.rd10wr60 { background: rgb(67,11,11); }
+#custom-diskio.rd10wr70 { background: rgb(78,11,11); }
+#custom-diskio.rd10wr80 { background: rgb(90,11,11); }
+#custom-diskio.rd10wr90 { background: rgb(101,11,11); }
+#custom-diskio.rd10wr100 { background: rgb(112,11,11); }
+#custom-diskio.rd20wr0 { background: rgb(0,22,22); }
+#custom-diskio.rd20wr10 { background: rgb(11,22,22); }
+#custom-diskio.rd20wr20 { background: rgb(22,22,22); }
+#custom-diskio.rd20wr30 { background: rgb(34,22,22); }
+#custom-diskio.rd20wr40 { background: rgb(45,22,22); }
+#custom-diskio.rd20wr50 { background: rgb(56,22,22); }
+#custom-diskio.rd20wr60 { background: rgb(67,22,22); }
+#custom-diskio.rd20wr70 { background: rgb(78,22,22); }
+#custom-diskio.rd20wr80 { background: rgb(90,22,22); }
+#custom-diskio.rd20wr90 { background: rgb(101,22,22); }
+#custom-diskio.rd20wr100 { background: rgb(112,22,22); }
+#custom-diskio.rd30wr0 { background: rgb(0,34,34); }
+#custom-diskio.rd30wr10 { background: rgb(11,34,34); }
+#custom-diskio.rd30wr20 { background: rgb(22,34,34); }
+#custom-diskio.rd30wr30 { background: rgb(34,34,34); }
+#custom-diskio.rd30wr40 { background: rgb(45,34,34); }
+#custom-diskio.rd30wr50 { background: rgb(56,34,34); }
+#custom-diskio.rd30wr60 { background: rgb(67,34,34); }
+#custom-diskio.rd30wr70 { background: rgb(78,34,34); }
+#custom-diskio.rd30wr80 { background: rgb(90,34,34); }
+#custom-diskio.rd30wr90 { background: rgb(101,34,34); }
+#custom-diskio.rd30wr100 { background: rgb(112,34,34); }
+#custom-diskio.rd40wr0 { background: rgb(0,45,45); }
+#custom-diskio.rd40wr10 { background: rgb(11,45,45); }
+#custom-diskio.rd40wr20 { background: rgb(22,45,45); }
+#custom-diskio.rd40wr30 { background: rgb(34,45,45); }
+#custom-diskio.rd40wr40 { background: rgb(45,45,45); }
+#custom-diskio.rd40wr50 { background: rgb(56,45,45); }
+#custom-diskio.rd40wr60 { background: rgb(67,45,45); }
+#custom-diskio.rd40wr70 { background: rgb(78,45,45); }
+#custom-diskio.rd40wr80 { background: rgb(90,45,45); }
+#custom-diskio.rd40wr90 { background: rgb(101,45,45); }
+#custom-diskio.rd40wr100 { background: rgb(112,45,45); }
+#custom-diskio.rd50wr0 { background: rgb(0,56,56); }
+#custom-diskio.rd50wr10 { background: rgb(11,56,56); }
+#custom-diskio.rd50wr20 { background: rgb(22,56,56); }
+#custom-diskio.rd50wr30 { background: rgb(34,56,56); }
+#custom-diskio.rd50wr40 { background: rgb(45,56,56); }
+#custom-diskio.rd50wr50 { background: rgb(56,56,56); }
+#custom-diskio.rd50wr60 { background: rgb(67,56,56); }
+#custom-diskio.rd50wr70 { background: rgb(78,56,56); }
+#custom-diskio.rd50wr80 { background: rgb(90,56,56); }
+#custom-diskio.rd50wr90 { background: rgb(101,56,56); }
+#custom-diskio.rd50wr100 { background: rgb(112,56,56); }
+#custom-diskio.rd60wr0 { background: rgb(0,67,67); }
+#custom-diskio.rd60wr10 { background: rgb(11,67,67); }
+#custom-diskio.rd60wr20 { background: rgb(22,67,67); }
+#custom-diskio.rd60wr30 { background: rgb(34,67,67); }
+#custom-diskio.rd60wr40 { background: rgb(45,67,67); }
+#custom-diskio.rd60wr50 { background: rgb(56,67,67); }
+#custom-diskio.rd60wr60 { background: rgb(67,67,67); }
+#custom-diskio.rd60wr70 { background: rgb(78,67,67); }
+#custom-diskio.rd60wr80 { background: rgb(90,67,67); }
+#custom-diskio.rd60wr90 { background: rgb(101,67,67); }
+#custom-diskio.rd60wr100 { background: rgb(112,67,67); }
+#custom-diskio.rd70wr0 { background: rgb(0,78,78); }
+#custom-diskio.rd70wr10 { background: rgb(11,78,78); }
+#custom-diskio.rd70wr20 { background: rgb(22,78,78); }
+#custom-diskio.rd70wr30 { background: rgb(34,78,78); }
+#custom-diskio.rd70wr40 { background: rgb(45,78,78); }
+#custom-diskio.rd70wr50 { background: rgb(56,78,78); }
+#custom-diskio.rd70wr60 { background: rgb(67,78,78); }
+#custom-diskio.rd70wr70 { background: rgb(78,78,78); }
+#custom-diskio.rd70wr80 { background: rgb(90,78,78); }
+#custom-diskio.rd70wr90 { background: rgb(101,78,78); }
+#custom-diskio.rd70wr100 { background: rgb(112,78,78); }
+#custom-diskio.rd80wr0 { background: rgb(0,90,90); }
+#custom-diskio.rd80wr10 { background: rgb(11,90,90); }
+#custom-diskio.rd80wr20 { background: rgb(22,90,90); }
+#custom-diskio.rd80wr30 { background: rgb(34,90,90); }
+#custom-diskio.rd80wr40 { background: rgb(45,90,90); }
+#custom-diskio.rd80wr50 { background: rgb(56,90,90); }
+#custom-diskio.rd80wr60 { background: rgb(67,90,90); }
+#custom-diskio.rd80wr70 { background: rgb(78,90,90); }
+#custom-diskio.rd80wr80 { background: rgb(90,90,90); }
+#custom-diskio.rd80wr90 { background: rgb(101,90,90); }
+#custom-diskio.rd80wr100 { background: rgb(112,90,90); }
+#custom-diskio.rd90wr0 { background: rgb(0,101,101); }
+#custom-diskio.rd90wr10 { background: rgb(11,101,101); }
+#custom-diskio.rd90wr20 { background: rgb(22,101,101); }
+#custom-diskio.rd90wr30 { background: rgb(34,101,101); }
+#custom-diskio.rd90wr40 { background: rgb(45,101,101); }
+#custom-diskio.rd90wr50 { background: rgb(56,101,101); }
+#custom-diskio.rd90wr60 { background: rgb(67,101,101); }
+#custom-diskio.rd90wr70 { background: rgb(78,101,101); }
+#custom-diskio.rd90wr80 { background: rgb(90,101,101); }
+#custom-diskio.rd90wr90 { background: rgb(101,101,101); }
+#custom-diskio.rd90wr100 { background: rgb(112,101,101); }
+#custom-diskio.rd100wr0 { background: rgb(0,112,112); }
+#custom-diskio.rd100wr10 { background: rgb(11,112,112); }
+#custom-diskio.rd100wr20 { background: rgb(22,112,112); }
+#custom-diskio.rd100wr30 { background: rgb(34,112,112); }
+#custom-diskio.rd100wr40 { background: rgb(45,112,112); }
+#custom-diskio.rd100wr50 { background: rgb(56,112,112); }
+#custom-diskio.rd100wr60 { background: rgb(67,112,112); }
+#custom-diskio.rd100wr70 { background: rgb(78,112,112); }
+#custom-diskio.rd100wr80 { background: rgb(90,112,112); }
+#custom-diskio.rd100wr90 { background: rgb(101,112,112); }
+#custom-diskio.rd100wr100 { background: rgb(112,112,112); }

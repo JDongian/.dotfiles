@@ -29,15 +29,13 @@
     // battery, clock. (network/bluetooth/audio are tray app widgets, not
     // bar modules.)
     "modules-right": [
-        "custom/netspeed",
         "image#tailscale",
-        "temperature",
-        "custom/swap",
-        "custom/diskio",
         "cpu",
-        "memory",
-        "disk",
+        "temperature",
+        "custom/ram",
+        "custom/diskio",
         "tray",
+        "custom/netspeed",
         "custom/language",
         "backlight",
         "battery",
@@ -99,16 +97,11 @@
     "cpu": {
         "interval": 2,
         "format": " {usage}%", // Icon: microchip
+        "tooltip": true,
+        "tooltip-format": "CPU usage: {usage}%\nLoad average (1m): {load}\nClock: {avg_frequency} GHz avg, {max_frequency} GHz max",
         "states": {
-          "warning": 70,
-          "critical": 90
+          "c20": 20, "c40": 40, "c60": 60, "c80": 80, "c100": 100
         }
-    },
-    "disk": {
-        "interval": 5,
-        "format": " {percentage_used}%",
-        "tooltip-format": "{used}/{total}",
-        "path": "/"
     },
 
     // Layout indicator. hyprland.conf:153 defines two groups -- us(dvorak)
@@ -137,31 +130,21 @@
         "tooltip": true
     },
 
-    "memory": {
+    // RAM% with swap folded into the background (see ram.sh + #custom-ram CSS).
+    "custom/ram": {
         "interval": 5,
-        "format": " {}%",
-        "states": {
-            "warning": 70,
-            "critical": 90
-        }
+        "exec": "~/.config/waybar/ram.sh",
+        "return-type": "json",
+        "format": " {}%"
     },
 
-    // Icon only: a wifi-signal glyph (ramps with strength), no SSID, no %.
-    // Detail is on the tooltip. Ethernet and disconnected get their own glyphs.
-    "network": {
-        "interval": 5,
-        "format-wifi": "{icon}",
-        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-        "format-ethernet": "󰈀",
-        "format-disconnected": "󰤭",
-        "tooltip-format": "{ifname}  {ipaddr}",
-        "tooltip-format-wifi": "{essid}  {signalStrength}%  {ipaddr}"
-    },
+
 
     "temperature": {
-      "critical-threshold": 80,
+      "critical-threshold": 200,
       "interval": 5,
-      "format": "{icon} {temperatureC}°C",
+      "states": { "t50": 50, "t60": 60, "t70": 70, "t80": 80, "t90": 90, "t100": 100 },
+      "format": "{temperatureC}°C",
       "tooltip-format": "CPU package temperature: {temperatureC}°C / {temperatureF}°F",
       "format-icons": [
           "", // Icon: temperature-empty
@@ -177,60 +160,15 @@
         "device": "intel_backlight",
         // ONE constant sun glyph, no %; LEVEL shows via the
         // background, stepped by these states (see #backlight.* in CSS).
-        "format": "☼",
+        "format": "🔆︎",
         "states": { "b20": 20, "b40": 40, "b60": 60, "b80": 80, "b100": 100 },
         "tooltip": true,
         "tooltip-format": "Screen brightness: {percent}%",
-        "on-scroll-up": "brightnessctl -q set 5%+",
-        "on-scroll-down": "brightnessctl -q set 5%-"
+        "on-scroll-up": "~/.local/bin/brightness-osd 5%+",
+        "on-scroll-down": "~/.local/bin/brightness-osd 5%-"
     },
 
-    "pulseaudio": {
-        "format": "{icon}",
-        "tooltip": true,
-        "tooltip-format": "{volume}%",
-        "format-muted": "",
-        "on-click": "pavucontrol",
-        "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
-        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
-        "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": [
-                "",
-                "",
-                ""
-            ]
-        }
-    },
-    "pulseaudio#microphone": {
-        "format": "{format_source}",
-        "format-source": " {volume}%",
-        "format-source-muted": " ",
-        "on-click": "pamixer --default-source -t",
-        "on-scroll-up": "pamixer --default-source -i 5",
-        "on-scroll-down": "pamixer --default-source -d 5",
-        "scroll-step": 5
-    },
 
-    // Replaces the blueman-applet tray icon (blueman retired 2026-09-27 in
-    // favor of overskride). Click opens the manager; the module itself shows
-    // connection state and per-device battery where the peripheral reports it.
-    "bluetooth": {
-        "format": "ᛒ",
-        "format-disabled": "ᛒ",
-        "format-connected": "ᛒ",
-        "format-connected-battery": "ᛒ",
-        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
-        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_battery_percentage}%",
-        "on-click": "overskride"
-    },
 
     "tray": {
         "icon-size": 18,
@@ -276,11 +214,6 @@
         "restart-interval": 5,
         "min-length": 8,
         "tooltip": true
-    },
-    "custom/swap": {
-        "interval": 5,
-        "exec": "free -m | awk '/Swap/ {printf \"%.0f\", $3/$2*100}'",
-        "format": " {}%"
     },
 
 }

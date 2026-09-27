@@ -1,0 +1,85 @@
+# Dunst notification daemon — light gray cards, black text, Selawik (the
+# system sans), hard square corners, mid-gray frames (col.inactive_border's
+# gray). Color is reserved for critical urgency.
+#
+# Dunst is D-Bus-activated (no exec-once); after changing this file run
+# `dunstctl reload` (or `pkill dunst` — it respawns on the next notification).
+
+[global]
+    # Geometry — top-right, floating separate blocks (gap_size) rather than
+    # one fused slab; each block gets its own 1px frame.
+    width = (340, 460)
+    height = (0, 360)
+    origin = top-right
+    offset = (8, 8)
+    gap_size = 6
+    padding = 14
+    horizontal_padding = 16
+    frame_width = 1
+    frame_color = "#595959"
+    separator_color = frame
+    corner_radius = 0
+
+    font = Selawik 13
+    markup = full
+    format = "<b>%s</b>\n%b"
+    show_age_threshold = 60
+    ellipsize = end
+
+    # Progress bar (notify-send -h int:value:N) — quiet gray fill
+    # (col.inactive_border's gray); the color lives on the frame instead.
+    progress_bar_height = 12
+    progress_bar_frame_width = 1
+    progress_bar_corner_radius = 0
+    highlight = "#595959"
+
+    # Recursive theme lookup replaces the legacy hardcoded icon_path search.
+    enable_recursive_icon_lookup = true
+    icon_theme = Adwaita
+    icon_position = left
+    min_icon_size = 24
+    max_icon_size = 48
+
+    enable_posix_regex = true
+    idle_threshold = 2m
+    mouse_left_click = close_current
+    mouse_middle_click = do_action, close_current
+    mouse_right_click = close_all
+    dmenu = fuzzel --dmenu
+    layer = overlay
+
+[experimental]
+    # Wayland-only: a hovered notification stops its timeout countdown.
+    pause_on_mouse_over = true
+
+[urgency_low]
+    background = "#d9d9d9"
+    foreground = "#4d4d4d"
+    timeout = 5
+
+[urgency_normal]
+    background = "#d9d9d9"
+    foreground = "#000000"
+    timeout = 10
+
+[urgency_critical]
+    # Inverse-video red block — same treatment as waybar's urgent workspace.
+    background = "#dc322f"
+    foreground = "#000000"
+    frame_color = "#dc322f"
+    timeout = 0
+
+# Brightness/volume OSDs: summary only, quick, never recalled from history.
+# brightness-osd sends with -a brightness; pasystray's appname is unverified —
+# check `dunstctl history` after a volume change and widen the regex if needed.
+#
+# frame_color here also recolors the progress bar's border: dunst has no
+# separate progress_bar frame color, the bar frame always reuses the
+# notification's frame_color. Dark gray keeps the OSD quiet — cyan frames are
+# for real notifications.
+[osd]
+    appname = "^(brightness|pasystray)$"
+    format = "<b>%s</b>"
+    timeout = 2
+    history_ignore = true
+    frame_color = "#303030"
