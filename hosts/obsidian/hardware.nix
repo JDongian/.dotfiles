@@ -48,9 +48,12 @@
   console.keyMap = "dvorak";
   services.xserver.xkb.layout = "dvorak";
 
-  # Intel thermal management. tile's power.nix flags thermald/TLP as a
-  # deferred TODO; obsidian takes them from the start (gravel already did).
-  services.thermald.enable = true;
+  # Intel thermal management -- COMMENTED OUT: it is a no-op on this machine.
+  # thermald refuses to start when /sys/.../dytc_lapmode is present ("Thermald
+  # can't run on this platform"), because Lenovo's DYTC firmware owns thermal
+  # policy on this ThinkPad. Enabling it only produces a unit that exits
+  # immediately and shows as "stopped" in thinkpower's Status tab.
+  # services.thermald.enable = true;
 
   services.tlp = {
     enable = true;

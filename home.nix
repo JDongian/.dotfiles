@@ -415,7 +415,36 @@
   # User Packages
   # =========================================================================
   home.packages = with pkgs; [
-    # McMojave hyprcursor theme
-    inputs.mcmojave-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default
+    # McMojave hyprcursor theme, with hotspots rescaled. Upstream
+    # (libadoxon/mcmojave-hyprcursor, unmaintained since 2024-08) normalized
+    # its pixel hotspots by 24 while the SVG canvases are 32x32, so every
+    # hotspot is 4/3 too far from the origin. Shapes like right_ptr (1.17)
+    # even land OUTSIDE the image, so clicks register up to a full cursor
+    # width away from the visible tip. Verified against the SVGs: right_ptr's
+    # tip is at pixel 28 of 32 (0.875) and meta.hl says 1.17 = 28/24.
+    # Multiplying every hotspot by 24/32 = 0.75 restores the intended pixels.
+    # Upstream's installPhase runs hyprcursor-util directly on $src (the shape
+    # meta.hl files end up zipped inside the compiled .hlc archives), so the
+    # rescale has to happen on a writable copy of the source BEFORE compiling.
+    (inputs.mcmojave-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      pname = old.pname + "-hotspot-fix";
+      installPhase = ''
+        runHook preInstall
+
+        cp -r $src src-fixed
+        chmod -R u+w src-fixed
+        find src-fixed -name meta.hl | while read -r f; do
+          awk '
+            $1 == "hotspot_x" || $1 == "hotspot_y" { printf "%s = %.4f\n", $1, $3 * 0.75; next }
+            { print }
+          ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+        done
+
+        mkdir -p $out/share/icons/
+        hyprcursor-util --create src-fixed -o $out/share/icons/
+
+        runHook postInstall
+      '';
+    }))
   ];
 }

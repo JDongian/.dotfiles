@@ -22,8 +22,9 @@
 #   6. udev charge/autosuspend     — per-device power quirks
 #   (7. hypridle idle ladder       — lives in hypridle.conf, cross-referenced)
 #
-# NOT deferred here (unlike tile): thermald and TLP charge thresholds are on
-# from day one — see hosts/obsidian/hardware.nix.
+# Charge thresholds are NOT here: thinkpower owns them (policy.toml
+# [battery.charge]) and writes the sysfs attributes directly, so TLP must not
+# set them or it would reassert its own values on every restart.
 # =============================================================================
 
 {

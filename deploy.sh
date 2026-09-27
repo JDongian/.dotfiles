@@ -27,15 +27,23 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+# Git runs as the invoking user, not root: root has no SSH key for the push,
+# and root-owned files in .git break later git commands run as the user.
+if [ -z "${SUDO_USER:-}" ]; then
+    echo "error: run via sudo from your user, not as root directly (git needs your identity)" >&2
+    exit 1
+fi
+as_user() { sudo -Hu "$SUDO_USER" "$@"; }
+
 host=$(hostname)
 msg=${1:-"config: deploy from $host $(date '+%Y-%m-%d %H:%M')"}
 
 # --- 1. commit ---------------------------------------------------------------
-git add -A
-if git diff --cached --quiet; then
+as_user git add -A
+if as_user git diff --cached --quiet; then
     echo ">>> nothing to commit; deploying HEAD ($(git rev-parse --short HEAD))"
 else
-    git commit -m "$msg"
+    as_user git commit -m "$msg"
     echo ">>> committed $(git rev-parse --short HEAD): $msg"
 fi
 
@@ -49,6 +57,6 @@ nixos-rebuild switch --flake ".#$host"
 
 # --- 4. push -----------------------------------------------------------------
 echo ">>> pushing to $(git remote get-url origin)"
-git push
+as_user git push
 
 echo ">>> deployed $(git rev-parse --short HEAD) on $host and pushed."
