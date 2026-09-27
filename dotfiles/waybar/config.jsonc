@@ -25,18 +25,21 @@
     "modules-center": [
         "sway/window"
     ],
+    // Ordering: system stats lead, then tray, keyboard, brightness meter,
+    // battery, clock. (network/bluetooth/audio are tray app widgets, not
+    // bar modules.)
     "modules-right": [
         "custom/netspeed",
         "image#tailscale",
         "temperature",
-        "disk",
         "custom/swap",
-        "memory",
-        "cpu",
         "custom/diskio",
-        "backlight",
+        "cpu",
+        "memory",
+        "disk",
         "tray",
         "custom/language",
+        "backlight",
         "battery",
         "clock",
     ],
@@ -83,13 +86,13 @@
             "charging": ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"],
             "default": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
         },
-        "tooltip-format": "{capacity}% \u00b7 {timeTo}\n{cycles} cycles",
+        "tooltip-format": "Battery: {capacity}%  ({timeTo})\nPower draw: {power} W\nHealth: {health}%\nCharge cycles: {cycles}",
         "tooltip": true
     },
 
     "clock": {
         "interval": 1,
-        "format": "{:%a, %b %e %H:%M:%S %p}",
+        "format": "{:%a, %b %e %H:%M:%S}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt>{calendar}</tt>"
     },
 
@@ -143,18 +146,23 @@
         }
     },
 
+    // Icon only: a wifi-signal glyph (ramps with strength), no SSID, no %.
+    // Detail is on the tooltip. Ethernet and disconnected get their own glyphs.
     "network": {
         "interval": 5,
-        "format-wifi": "{essid} ({signalStrength}%)", // Icon: wifi
-        "format-ethernet": "  {ifname}: {ipaddr}/{cidr}", // Icon: ethernet
-        "format-disconnected": "⚠  Disconnected",
-        "tooltip-format": "{ifname}: {ipaddr}"
+        "format-wifi": "{icon}",
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "format-ethernet": "󰈀",
+        "format-disconnected": "󰤭",
+        "tooltip-format": "{ifname}  {ipaddr}",
+        "tooltip-format-wifi": "{essid}  {signalStrength}%  {ipaddr}"
     },
 
     "temperature": {
       "critical-threshold": 80,
       "interval": 5,
       "format": "{icon} {temperatureC}°C",
+      "tooltip-format": "CPU package temperature: {temperatureC}°C / {temperatureF}°F",
       "format-icons": [
           "", // Icon: temperature-empty
           "", // Icon: temperature-quarter
@@ -167,25 +175,24 @@
 
     "backlight": {
         "device": "intel_backlight",
-        "format": "{icon} {percent}%",
-        "format-icons": [
-            "░",
-            "▒",
-            "▓",
-            "█"
-        ],
-        "on-scroll-up": "brightnessctl -q set 1%+",
-        "on-scroll-down": "brightnessctl -q set 1%-"
+        // ONE constant sun glyph, no %; LEVEL shows via the
+        // background, stepped by these states (see #backlight.* in CSS).
+        "format": "☼",
+        "states": { "b20": 20, "b40": 40, "b60": 60, "b80": 80, "b100": 100 },
+        "tooltip": true,
+        "tooltip-format": "Screen brightness: {percent}%",
+        "on-scroll-up": "brightnessctl -q set 5%+",
+        "on-scroll-down": "brightnessctl -q set 5%-"
     },
 
     "pulseaudio": {
-        "format": "{icon}  {volume}%",
-        "tooltip": false,
-        "format-muted": " Muted",
+        "format": "{icon}",
+        "tooltip": true,
+        "tooltip-format": "{volume}%",
+        "format-muted": "",
         "on-click": "pavucontrol",
-        "on-scroll-up": "pamixer -i 5",
-        "on-scroll-down": "pamixer -d 5",
-        "scroll-step": 100,
+        "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
         "format-icons": {
             "headphone": "",
             "hands-free": "",
@@ -210,10 +217,26 @@
         "scroll-step": 5
     },
 
+    // Replaces the blueman-applet tray icon (blueman retired 2026-09-27 in
+    // favor of overskride). Click opens the manager; the module itself shows
+    // connection state and per-device battery where the peripheral reports it.
+    "bluetooth": {
+        "format": "ᛒ",
+        "format-disabled": "ᛒ",
+        "format-connected": "ᛒ",
+        "format-connected-battery": "ᛒ",
+        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_battery_percentage}%",
+        "on-click": "overskride"
+    },
+
     "tray": {
         "icon-size": 18,
         "spacing": 10
     },
+
 
     // Condensed up/down throughput; full detail (interface, IP, B/s + bit/s,
     // totals) is in the tooltip on hover. Deliberately NOT waybar's built-in

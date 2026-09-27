@@ -68,6 +68,24 @@ window#waybar {
 	padding: 0 4px;
 }
 
+/* Brightness as a background meter: the sun
+   glyph is constant and the LEVEL is read from the background, which sweeps
+   black -> cream across the states declared on the backlight module. waybar
+   applies the smallest threshold >= current brightness, so b20 is the dimmest
+   band and b100 the brightest; text flips to black once the ground is light
+   enough to need it. */
+#backlight {
+	background: #000000;
+	color: #fdf6e3;
+	padding: 0 3px;
+	margin: 0;
+}
+#backlight.b20  { background: #000000; color: #fdf6e3; }
+#backlight.b40  { background: #3a3a32; color: #fdf6e3; }
+#backlight.b60  { background: #6e6852; color: #fdf6e3; }
+#backlight.b80  { background: #a89c72; color: #000000; }
+#backlight.b100 { background: #fdf6e3; color: #000000; }
+
 /* Tailscale state colours. Classes come from the script's JSON "class" field:
    up = healthy (stays with the bar foreground, no shouting), exit = traffic is
    leaving via an exit node, offline/stopped = backend down, error = tailscaled
