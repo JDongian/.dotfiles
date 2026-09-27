@@ -34,82 +34,6 @@
          then builtins.path { path = p; name = "obsidian-wifi-secrets"; }
          else null;
   in {
-    # ThinkPad T490s configuration
-    nixosConfigurations.tile = nixpkgs.lib.nixosSystem {
-      specialArgs = {
-        inherit inputs;
-        inherit system;
-      };
-      modules = [
-        ./hosts/tile
-        inputs.home-manager.nixosModules.default
-        {
-          nixpkgs.overlays = [
-            # claude-code from the overlay's default output. This is the SINGLE
-            # source of truth for claude. Its built-in npm-global auto-updater
-            # otherwise reinstalls a ~/.nvm/.../@anthropic-ai/claude-code copy
-            # that shadows this on PATH and drifts — disabled durably via
-            # DISABLE_AUTOUPDATER=1 in home.nix (home.sessionVariables). See the
-            # claude_nix_single_source note for the full story.
-            # To bump: `nix flake update claude-code-overlay`, which moves the
-            # input revision so `.default` tracks a newer release. The pinned
-            # revision does NOT expose per-version attrs (e.g. ."2.1.161"),
-            # so don't reference them — it fails eval with "attribute missing".
-            inputs.claude-code-overlay.overlays.default
-          ];
-        }
-        {
-          # Configure Home Manager for user joshua
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit inputs; };
-          home-manager.users.joshua = { config, pkgs, lib, ... }: {
-            imports = [ ./home.nix ];
-            # Tile-specific monitor config (1920x1080)
-            home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/tile-monitor.conf;
-            # Tile-specific terminal font size (gohufont 11px)
-            home.file.".config/foot/font.ini".source = ./dotfiles/foot/hosts/tile-font.ini;
-            # Tile-specific waybar font size (10px)
-            home.file.".config/waybar/font.css".source = ./dotfiles/waybar/hosts/tile-font.css;
-          };
-        }
-      ];
-    };
-
-    # X1 Carbon configuration
-    nixosConfigurations.gravel = nixpkgs.lib.nixosSystem {
-      specialArgs = {
-        inherit inputs;
-        inherit system;
-      };
-      modules = [
-        inputs.disko.nixosModules.disko
-        ./hosts/gravel
-        inputs.home-manager.nixosModules.default
-        {
-          nixpkgs.overlays = [
-            # claude-code from the overlay default; keep in sync with the tile
-            # host above. Bump via `nix flake update claude-code-overlay`.
-            inputs.claude-code-overlay.overlays.default
-          ];
-        }
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit inputs; };
-          home-manager.users.joshua = { config, pkgs, lib, ... }: {
-            imports = [ ./home.nix ];
-            # Gravel-specific monitor config (2560x1440)
-            home.file.".config/hypr/monitor.conf".source = ./dotfiles/hypr/hosts/gravel-monitor.conf;
-            # Gravel-specific terminal font size (gohufont 11px)
-            home.file.".config/foot/font.ini".source = ./dotfiles/foot/hosts/gravel-font.ini;
-            # Gravel-specific waybar font size (10px)
-            home.file.".config/waybar/font.css".source = ./dotfiles/waybar/hosts/gravel-font.css;
-          };
-        }
-      ];
-    };
-
     # ThinkPad X1 Carbon 7th gen configuration.
     # Mirrors `tile` as closely as the hardware allows: same configuration.nix,
     # same home.nix, same overlays. Differences are confined to hosts/obsidian
@@ -188,7 +112,7 @@
     packages.${system}.installer =
       self.nixosConfigurations.installer.config.system.build.isoImage;
 
-    # Keep 'default' as an alias to current machine for convenience
-    nixosConfigurations.default = self.nixosConfigurations.tile;
+    # obsidian is the only host.
+    nixosConfigurations.default = self.nixosConfigurations.obsidian;
   };
 }

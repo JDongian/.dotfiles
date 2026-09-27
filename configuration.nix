@@ -112,6 +112,11 @@
     };
   };
 
+  # blueman provides the bluetooth tray applet (blueman-applet, started from
+  # hyprland.conf) and its manager window — the "original" bluetooth widget.
+  # Reinstated 2026-09-27 after a brief overskride experiment: overskride has
+  # no tray/applet mode, so it could not sit in the tray like pasystray/
+  # nm-applet do. bluez itself comes from hardware.bluetooth above.
   services.blueman.enable = true;
 
   time.timeZone = "America/Los_Angeles";
@@ -151,7 +156,11 @@
   };
 
   programs.hyprland.enable = true;
-  services.hypridle.enable = true;
+  # hypridle's unit is declared in home.nix instead, so it can be pointed at
+  # the config thinkpower generates from policy.toml. The NixOS module hard-codes
+  # ExecStart with no -c.
+  # mkForce because programs.hyprlock's module also switches hypridle on.
+  services.hypridle.enable = lib.mkForce false;
   programs.hyprlock.enable = true;
 
   # Waybar started from Hyprland config instead

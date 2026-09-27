@@ -17,6 +17,10 @@
     # tile with obsidian's stable device paths substituted.
     ./power.nix
 
+    # Fingerprint reader across suspend/resume. Hooks the sleep units but is a
+    # hardware workaround, not power policy — split out of power.nix.
+    ./fingerprint.nix
+
     # sshfs mount of tile:~/tmp/shared (on-demand, over Tailscale)
     ./sshfs.nix
   ];

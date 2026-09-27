@@ -58,9 +58,10 @@
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
 
-      # ThinkPad charge thresholds: stop at 80% to preserve battery health.
-      START_CHARGE_THRESH_BAT0 = 40;
-      STOP_CHARGE_THRESH_BAT0 = 80;
+      # Charge thresholds are NOT set here any more: thinkpower owns them
+      # via [battery.charge] in policy.toml. TLP reasserts its own values on
+      # every service restart, so leaving them here would silently override
+      # the policy at each boot.
     };
   };
 

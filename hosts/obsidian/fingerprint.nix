@@ -325,24 +325,4 @@
       '';
     };
   };
-
-  # --- Fingerprint reader USB autosuspend (udev) ----------------------------
-  # extraRules is types.lines, so this merges with the rules left in power.nix.
-  services.udev.extraRules = ''
-    # Synaptics fingerprint reader: disable USB autosuspend so the kernel
-    # doesn't power it down between scans (causes stalls on next claim). The
-    # bulk of fprintd's stale-device problems come from system suspend/resume,
-    # not idle autosuspend — see the fprintd-resume.service above for that.
-    #
-    # BROADENED vs tile: tile pins the exact product id 06cb:00bd. X1C7 units
-    # ship several Synaptics sensors (00bd, 00df, 00c9, 0100 are all seen in
-    # the wild), and a rule pinned to the wrong id silently does nothing —
-    # you would only notice as intermittent post-resume scan stalls. Matching
-    # the VENDOR (06cb) covers every variant; 06cb is Synaptics, and the only
-    # 06cb device in this laptop is the fingerprint reader, so this is not
-    # over-broad in practice.
-    #
-    # To tighten: run `lsusb | grep -i synaptics` on obsidian and pin the id.
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="06cb", ATTR{power/control}="on"
-  '';
 }
