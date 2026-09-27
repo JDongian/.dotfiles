@@ -138,6 +138,14 @@
   # wake-ups, and an instant resume when the lid opens.
   services.logind.settings.Login.HandleLidSwitchExternalPower = "suspend";
 
+  # --- Power button: hibernate ------------------------------------------------
+  # A short press hibernates rather than the logind default of poweroff: it is
+  # the save-your-work action, and a stray press costs a resume instead of a
+  # session. (This button was soup-damaged and cleaned in Sep 2026; if it ever
+  # fires spuriously again, set this to "ignore" — the Super+Shift+Q fuzzel
+  # menu covers intentional shutdowns.)
+  services.logind.settings.Login.HandlePowerKey = "hibernate";
+
   # --- Lock-screen responsiveness (InhibitDelayMaxSec) -----------------------
   # Cuts the visible "warning screen" gap between hyprlock starting and the
   # lock surface actually painting.
