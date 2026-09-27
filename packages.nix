@@ -1,6 +1,27 @@
 { config, pkgs, lib, ... }:
 
 let
+  # Selawik — Microsoft's OFL Segoe-UI-metric substitute. An OUTLINE (sans)
+  # font: renders cleanly in GTK4/Pango and fuzzel, unlike bitmap fonts
+  # (gohufont) which GTK4 aliases. The upstream repo is SOURCE-ONLY (UFO/.glyphs, no
+  # compiled TTF), so this vendors a prebuilt TTF tracked in the repo at
+  # dotfiles/fonts/selawik.ttf rather than building from UFO with fontmake.
+  selawik = pkgs.stdenvNoCC.mkDerivation {
+    pname = "selawik";
+    version = "1.01";
+    src = ./dotfiles/fonts/selawik.ttf;
+    dontUnpack = true;
+    installPhase = ''
+      install -Dm644 "$src" "$out/share/fonts/truetype/Selawik.ttf"
+    '';
+    meta = {
+      description = "Selawik — open-source metric-compatible Segoe UI substitute";
+      homepage = "https://github.com/microsoft/Selawik";
+      license = lib.licenses.ofl;
+      platforms = lib.platforms.all;
+    };
+  };
+
   two-slice = pkgs.stdenvNoCC.mkDerivation {
     pname = "two-slice-font";
     version = "1.0";
@@ -31,9 +52,22 @@ in
     gohufont
     google-fonts
     material-icons
+    selawik
     terminus_font
     two-slice
   ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
+
+  # System-wide font defaults (what apps get when they ask for a GENERIC
+  # family). monospace/terminal = gohufont (bitmap, crisp in foot/waybar via
+  # the AA-off rule in home.nix). sansSerif = Selawik (OUTLINE): everything
+  # asking for generic "Sans" — GTK apps like nm-connection-editor / nm-applet
+  # / Nautilus dialogs, and any GTK4 surface — gets a clean outline face
+  # rather than an aliased bitmap.
+  fonts.fontconfig.defaultFonts = {
+    monospace = [ "gohufont" ];
+    sansSerif = [ "Selawik" ];
+    serif = [ "Selawik" ];
+  };
 
   # =========================================================================
   # System Packages
@@ -107,6 +141,7 @@ in
     google-chrome
     libreoffice-fresh
     nautilus
+    adwaita-icon-theme  # GTK icon theme; blueman-applet tray icon needs it
     signal-desktop
     zoom-us
     shotcut
@@ -149,7 +184,6 @@ in
     playerctl
     pulseaudio  # Provides pactl and other PA utilities for PipeWire-Pulse
     slurp
-    awww  # swww renamed to awww in nixpkgs; provides awww / awww-daemon
     waybar
     wayland-utils
     wdisplays
