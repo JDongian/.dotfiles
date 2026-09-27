@@ -16,7 +16,16 @@
 #                             Eval-only for other hosts; nothing is built yet.
 #   3. nixos-rebuild switch — builds and activates THIS host. This is the real
 #                             build test; it stops here on any failure.
-#   4. git push             — only reached if everything above succeeded, so
+#   4. hyprland refresh     — best-effort, never fails the deploy. A running
+#                             Hyprland outlives the switch and keeps stale
+#                             state in memory: the config symlink swap doesn't
+#                             fire its file watcher, and hyprcursor caches the
+#                             resolved theme path — `setcursor` with the SAME
+#                             theme name is a no-op, so bounce through another
+#                             theme to force a re-resolve (2026-09-27: a
+#                             deployed cursor hotspot fix silently didn't
+#                             apply until the compositor was poked).
+#   5. git push             — only reached if everything above succeeded, so
 #                             upstream only ever sees configs that deployed.
 set -euo pipefail
 
@@ -55,7 +64,27 @@ nix flake check
 echo ">>> nixos-rebuild switch --flake .#$host"
 nixos-rebuild switch --flake ".#$host"
 
-# --- 4. push -----------------------------------------------------------------
+# --- 4. refresh running Hyprland session (best-effort) ------------------------
+runtime_dir="/run/user/$(id -u "$SUDO_USER")"
+hypr_sig=$(ls -t "$runtime_dir/hypr" 2>/dev/null | head -1 || true)
+if [ -n "$hypr_sig" ]; then
+    hypr() {
+        sudo -u "$SUDO_USER" env XDG_RUNTIME_DIR="$runtime_dir" \
+            HYPRLAND_INSTANCE_SIGNATURE="$hypr_sig" hyprctl "$@"
+    }
+    echo ">>> refreshing running Hyprland (config reload + cursor theme bounce)"
+    hypr -q reload || true
+    cursor_theme=$(grep -oP '^env = HYPRCURSOR_THEME,\K.*' dotfiles/hypr/hyprland.conf || true)
+    cursor_size=$(grep -oP '^env = HYPRCURSOR_SIZE,\K.*' dotfiles/hypr/hyprland.conf || true)
+    if [ -n "$cursor_theme" ] && [ -n "$cursor_size" ]; then
+        hypr -q setcursor Adwaita 24 || true
+        hypr -q setcursor "$cursor_theme" "$cursor_size" || true
+    fi
+else
+    echo ">>> no running Hyprland session; skipping refresh"
+fi
+
+# --- 5. push -------------------------------------------------------------------
 echo ">>> pushing to $(git remote get-url origin)"
 as_user git push
 
