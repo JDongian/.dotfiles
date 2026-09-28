@@ -157,7 +157,7 @@
 
   programs.hyprland.enable = true;
   # hypridle's unit is declared in home.nix instead, so it can be pointed at
-  # the config thinkpower generates from policy.toml. The NixOS module hard-codes
+  # the config hyprpower generates from profile.toml. The NixOS module hard-codes
   # ExecStart with no -c.
   # mkForce because programs.hyprlock's module also switches hypridle on.
   services.hypridle.enable = lib.mkForce false;

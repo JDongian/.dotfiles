@@ -52,7 +52,7 @@
   # thermald refuses to start when /sys/.../dytc_lapmode is present ("Thermald
   # can't run on this platform"), because Lenovo's DYTC firmware owns thermal
   # policy on this ThinkPad. Enabling it only produces a unit that exits
-  # immediately and shows as "stopped" in thinkpower's Status tab.
+  # immediately and shows as "stopped" in hyprpower's Status tab.
   # services.thermald.enable = true;
 
   services.tlp = {
@@ -61,8 +61,8 @@
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
 
-      # Charge thresholds are NOT set here any more: thinkpower owns them
-      # via [battery.charge] in policy.toml. TLP reasserts its own values on
+      # Charge thresholds are NOT set here any more: hyprpower owns them
+      # via [battery.charge] in profile.toml. TLP reasserts its own values on
       # every service restart, so leaving them here would silently override
       # the policy at each boot.
     };

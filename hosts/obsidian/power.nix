@@ -22,13 +22,13 @@
 #   6. udev charge/autosuspend     — per-device power quirks
 #   (7. hypridle idle ladder       — lives in hypridle.conf, cross-referenced)
 #
-# Charge thresholds are NOT here: thinkpower owns them (policy.toml
+# Charge thresholds are NOT here: hyprpower owns them (profile.toml
 # [battery.charge]) and writes the sysfs attributes directly, so TLP must not
 # set them or it would reassert its own values on every restart.
 # =============================================================================
 
 {
-  # DOWNSTREAM: thinkpower (~/work/thinkpower) prefers `upower -i` over raw
+  # DOWNSTREAM: hyprpower (~/projects/hyprpower) prefers `upower -i` over raw
   # sysfs for battery state, and /var/lib/upower/history-*.dat is the only
   # battery series on this machine. Turning this off silently degrades that
   # tool to instantaneous sysfs values and stops the history accumulating —
@@ -152,21 +152,11 @@
   # exactly one control, the lid (HandleLidSwitchExternalPower); every key
   # handler is a single value. So logind is set to "ignore" and becomes a pure
   # event router, and the decision moves to a script that can read anything.
-  # Both must not act, or the button fires twice.
-  services.logind.settings.Login.HandlePowerKey = "ignore";
-
-  services.acpid = {
+  # Both must not act, or the button fires twice. The hyprpower module sets
+  # HandlePowerKey = "ignore" and routes the press through acpid.
+  services.hyprpower = {
     enable = true;
-    # `read` is a shell builtin, so this needs nothing on PATH but systemctl.
-    # Hibernate falls back to suspend for the same reason the low-battery
-    # script does: a refused hibernate must not leave the press doing nothing.
-    # The decision lives in policy.toml [button.power]; acpid only routes.
-    # THINKPOWER_POLICY is explicit because acpid runs as root, where HOME
-    # would point at /root and the policy would not be found.
-    powerEventCommands = ''
-      THINKPOWER_POLICY=/home/joshua/work/thinkpower/config/policy.toml \
-        /home/joshua/.local/bin/thinkpower event power
-    '';
+    user = "joshua";
   };
 
   # --- Lock-screen responsiveness (InhibitDelayMaxSec) -----------------------
@@ -225,47 +215,6 @@
   # enough suitable swap space". Fix: partition priority 0 (lowest), swapfile
   # priority 10 (highest) — paging fills the swapfile; partition stays empty.
   # Fallback: if hibernate still fails, the script suspends instead of dying.
-  systemd.services.hibernate-on-low-battery = {
-    description = "Rest the screen at 5% battery, hibernate at 4%";
-    after = [ "multi-user.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      # Thresholds and actions live in policy.toml [charge].
-      ExecStart = pkgs.writeShellScript "low-battery-action" ''
-        THINKPOWER_POLICY=/home/joshua/work/thinkpower/config/policy.toml \
-          /home/joshua/.local/bin/thinkpower event charge
-      '';
-    };
-  };
-
-  # Re-apply the system half of the policy at boot: the logind drop-in and
-  # the charge thresholds. Ordered after TLP because TLP writes charge
-  # thresholds when it starts, and policy must have the last word.
-  systemd.services.thinkpower-apply = {
-    description = "Apply thinkpower system policy";
-    after = [ "tlp.service" "systemd-logind.service" ];
-    wants = [ "tlp.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = pkgs.writeShellScript "thinkpower-apply-system" ''
-        THINKPOWER_POLICY=/home/joshua/work/thinkpower/config/policy.toml \
-          /home/joshua/.local/bin/thinkpower apply --system
-      '';
-    };
-  };
-
-  systemd.timers.hibernate-on-low-battery = {
-    description = "Check battery percentage for the low-battery actions";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnUnitActiveSec = "1min"; # Check every minute
-      Unit = "hibernate-on-low-battery.service";
-    };
-  };
-
-
   # --- Per-device power quirks (udev) ---------------------------------------
   services.udev.extraRules = ''
     # Auto-fast-charge Apple MFi devices (iPhone/iPad). The kernel

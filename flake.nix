@@ -13,8 +13,22 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     mcmojave-hyprcursor.url = "github:libadoxon/mcmojave-hyprcursor";
+    # The network panel and its tray icon. A local path for the same reason
+    # as hyprpower below.
+    ags-nm-panel = {
+      url = "path:/home/joshua/projects/ags-nm-panel";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     claude-code-overlay = {
       url = "github:ryoppippi/claude-code-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    # The power policy engine AND its integration modules, versioned together.
+    # A local path rather than github:JDongian/hyprpower while it is under
+    # active development: this picks up the working tree, so a module change
+    # does not need a push first. Swap the url to switch.
+    hyprpower = {
+      url = "path:/home/joshua/projects/hyprpower";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -45,6 +59,7 @@
       };
       modules = [
         inputs.disko.nixosModules.disko
+        inputs.hyprpower.nixosModules.default
         ./hosts/obsidian
         inputs.home-manager.nixosModules.default
         {
@@ -59,7 +74,7 @@
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.users.joshua = { config, pkgs, lib, ... }: {
-            imports = [ ./home.nix ];
+            imports = [ ./home.nix inputs.hyprpower.homeManagerModules.default ];
             # Obsidian-specific monitor config (2560x1440 WQHD)
             home.file.".config/hypr/monitor.conf".source =
               ./dotfiles/hypr/hosts/obsidian-monitor.conf;
