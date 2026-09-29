@@ -37,15 +37,15 @@ battery = "1m45s"
 
 [idle.backlight_off]
 ac      = "10m"
-battery = "2m"
+battery = "5m"
 
 [idle.display_off]
 ac      = false
-battery = false
+battery = "6m"
 
 [idle.lock]
 ac      = "10m1s"
-battery = "2m1s"
+battery = "5m1s"
 
 [idle.suspend]
 ac      = false        # plugged in: stay reachable
@@ -60,14 +60,14 @@ battery = "10m"
 # power source, and it also governs the lid.
 [idle.hibernate]
 ac      = false
-battery = "20m"
+battery = "60m"
 
 # Three mutually exclusive conditions, not a power-source split. "docked"
 # means an external display or dock is attached — NOT merely plugged in —
 # and it wins over the other two when present.
 [lid]
 docked  = "ignore"
-ac      = "suspend"
+ac      = "ignore"
 battery = "suspend"
 
 [button.power]
