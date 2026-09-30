@@ -1,6 +1,7 @@
-# Dunst notification daemon — light gray cards, black text, Selawik (the
-# system sans), hard square corners, mid-gray frames (col.inactive_border's
-# gray). Color is reserved for critical urgency.
+# Dunst notification daemon — light gray cards, black text, hard square
+# corners, mid-gray frames (col.inactive_border's gray). Color is reserved for
+# critical urgency. Font is the system monospace (gohufont) at 14px, the same
+# size as the bar.
 #
 # Dunst is D-Bus-activated (no exec-once); after changing this file run
 # `dunstctl reload` (or `pkill dunst` — it respawns on the next notification).
@@ -20,7 +21,7 @@
     separator_color = frame
     corner_radius = 0
 
-    font = Selawik 13
+    font = Monospace 14px
     markup = full
     format = "<b>%s</b>\n%b"
     show_age_threshold = 60
