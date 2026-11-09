@@ -67,11 +67,18 @@ nixos-rebuild switch --flake ".#$host"
 # --- 4. refresh running Hyprland session (best-effort) ------------------------
 runtime_dir="/run/user/$(id -u "$SUDO_USER")"
 hypr_sig=$(ls -t "$runtime_dir/hypr" 2>/dev/null | head -1 || true)
-if [ -n "$hypr_sig" ]; then
-    hypr() {
-        sudo -u "$SUDO_USER" env XDG_RUNTIME_DIR="$runtime_dir" \
-            HYPRLAND_INSTANCE_SIGNATURE="$hypr_sig" hyprctl "$@"
-    }
+hypr() {
+    sudo -u "$SUDO_USER" env XDG_RUNTIME_DIR="$runtime_dir" \
+        HYPRLAND_INSTANCE_SIGNATURE="$hypr_sig" hyprctl "$@"
+}
+# A running compositor older than the installed one may not understand the new
+# config (2026-11-08: a 0.56 session reloaded into a Lua config only 0.57 reads,
+# found no hyprland.conf, and fell back to its stub). Leave it for re-login.
+running_ver=$([ -n "$hypr_sig" ] && hypr version | awk 'NR==1{print $2}' || true)
+installed_ver=$("/etc/profiles/per-user/$SUDO_USER/bin/Hyprland" --version | awk 'NR==1{print $2}' || true)
+if [ -n "$running_ver" ] && [ "$running_ver" != "$installed_ver" ]; then
+    echo ">>> running Hyprland $running_ver != installed $installed_ver; NOT reloading -- log out and back in"
+elif [ -n "$hypr_sig" ]; then
     echo ">>> refreshing running Hyprland (config reload + cursor theme bounce)"
     hypr -q reload || true
     cursor_theme=$(grep -oP '^hl.env\("HYPRCURSOR_THEME", "\K[^"]+' dotfiles/hypr/hyprland.lua || true)
