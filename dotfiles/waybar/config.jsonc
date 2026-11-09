@@ -49,8 +49,8 @@
 
     "hyprland/workspaces": {
         "format": "{icon}",
-        "on-scroll-up": "hyprctl dispatch workspace e+1",
-        "on-scroll-down": "hyprctl dispatch workspace e-1"
+        "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'",
+        "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'"
     },
 
     // Glyphs are the Nerd Fonts Material Design battery_* series -- the SAME
@@ -104,7 +104,7 @@
         }
     },
 
-    // Layout indicator. hyprland.conf:153 defines two groups -- us(dvorak)
+    // Layout indicator. hyprland.lua input.kb_layout defines two groups -- us(dvorak)
     // and plain us -- and Super+Shift+Space cycles them.
     //
     // The override keys are "format-<shortDescription>-<variant>" then

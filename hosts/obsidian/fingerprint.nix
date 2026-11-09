@@ -38,7 +38,84 @@
   #     before or after this, it meets a clean, claimable fprintd. "Keep
   #     trying" replaces "restart once and hope the timing is right."
   # ===========================================================================
+  # 2026-10-13 — locker FROZE after a hibernate resume: finger on the reader
+  # before the compositor confirmed the lock. hyprlock bug, unfixed upstream;
+  # MITIGATED by `sleep 2` before the resume try-restart (hyprpower). This
+  # block is the evidence, the upstream status, and the recovery drill.
+  # ===========================================================================
+  # SYMPTOM: lock screen up, fingerprint ignored, password "checking" forever.
+  # Not the dead-reader failure above — the reader WAS armed and DID match.
+  #
+  # TIMELINE (journalctl -o short-precise, hyprlock 1747571):
+  #   01:13:44.95  kernel: hibernate resume, tasks restarted
+  #   01:13:45.13  hypridle after_sleep_cmd: `dpms on; try-restart hyprlock`
+  #   01:13:46.67  NEW hyprlock: "Locking session"           (ext_session_lock)
+  #   01:13:46.76  NEW hyprlock: "fprint: started verifying"  (+90ms)
+  #   01:13:47.04  "fprint: handling status verify-match"     (+280ms: finger
+  #                was already on the sensor from the wake-up touch)
+  #   01:13:47.04  WARN "Unlock called, but not locked yet"   <- DROPPED
+  #   01:13:47.22  "onLockLocked called"                      (compositor ack)
+  #   01:13:55.06  password typed: pam_unix "conversation failed" /
+  #                "auth could not identify password"; nothing after this.
+  #
+  # MECHANISM (read from hyprlock v0.9.6 source, not inferred):
+  #   fadeOutAndUnlock() sets m_fadeOutOrTerminate = true FIRST, then returns
+  #   if !locked (upstream #661, meant for dpms-off during grace). Nothing ever
+  #   clears the flag and onLockLocked() never re-checks it. The PAM thread is
+  #   parked in waitForInput(); the password submit wakes it, conv() sees
+  #   isFadingOutOrTerminating() and returns PAM_CONV_ERR, auth() fails, and
+  #   the thread loop hits the same check and RETURNS without enqueueFail —
+  #   m_bBlockInput stays true, so checkWaiting() blocks all input forever.
+  #   The main loop is fine (its futex wait is the 5s idle), so this is a
+  #   locker with no auth thread, not a deadlock.
+  #
+  # UPSTREAM (checked 2026-10-13 against GitHub directly): v0.9.6 is the
+  #   latest release; main is 0.9.6 + #1059 (PAM terminate deadlock) + a gcc
+  #   bump, and onLockLocked() is unchanged there. No issue or PR covers this
+  #   race. Relatives, none of which fix it: #661 (introduced the drop),
+  #   #1074 (open: a SUCCESSFUL fingerprint unlock aborts PAM and lands in
+  #   faillock; rapid relock gets AlreadyInUse), #1053/#1055 (hang at exit,
+  #   fixed by #1059), #1065 (open PR, moves fade-IN into onLockLocked).
+  #   The real fix is ~10 lines: onLockLocked() should run the pending
+  #   fade-out when m_fadeOutOrTerminate is already set. Not carried as a
+  #   local patch by choice; file it upstream instead.
+  #
+  # WHY THIS CONFIG REACHES IT: the after_sleep try-restart (path 3 below)
+  # starts a FRESH instance at the exact moment a finger is on the reader. A
+  # fresh instance arms fprintd ~90ms after sending the lock request, inside
+  # the ~170ms window before the compositor's `locked`. The long-lived paths
+  # (lock_cmd / before_sleep_cmd) are confirmed locked long before any touch.
+  #
+  # MITIGATION: hyprpower now emits `sleep 2` ahead of the try-restart in
+  # after_sleep_cmd (policy.py, general()). The wake-up touch is over by
+  # then, so the fresh instance's verify window is empty. It shrinks the
+  # race rather than closing it, and the reader is dark for those 2s after
+  # resume. Revisit when a hyprlock release changes onLockLocked().
+  #
+  # RECOVERY DRILL (worked 2026-10-13, no reboot):
+  #   1. Ctrl+Alt+F2, log in on the tty.
+  #   2. `systemctl --user restart hyprlock.service` (as joshua; from a root
+  #      shell add `--machine=joshua@.host`). misc:allow_session_lock_restore
+  #      is on, so the new instance attaches to the surviving lock surface.
+  #      Do NOT launch `hyprlock` by hand with a borrowed env: it comes up
+  #      outside the login session (fprintd reports "No fingerprints enrolled"
+  #      for it) and hypridle's next idle tick starts a SECOND one through the
+  #      unit, and input then goes to whichever one is not drawing.
+  #   3. Ctrl+Alt+F1 IMMEDIATELY and stay there. The fade-out that releases
+  #      the lock is driven by frame callbacks, which stop while another VT is
+  #      active — a successful fingerprint/SIGUSR1 from tty2 looks "hung"
+  #      until you switch back. (This is also why `pkill -USR1 hyprlock`
+  #      from tty2 "did nothing" on the first attempt.)
+  # ===========================================================================
   # DEFERRED — "option C": collapse the three hyprlock start paths into one
+  # ===========================================================================
+  # CORRECTION 2026-10-13: steps (a)+(b) as written do not deliver what (b)
+  # promises. `Restart=always, RestartSec=0` respawns hyprlock the instant the
+  # presleep stop kills it — i.e. still BEFORE the machine sleeps, since the
+  # user manager is not ordered against sleep.target. The result is again one
+  # long-lived instance across suspend with the single-shot re-claim problem
+  # (b) exists to avoid. A real fresh-after-resume instance needs the start to
+  # be triggered post-thaw (what path 3 does today). Re-plan before doing this.
   # ===========================================================================
   # IMPLEMENT THIS IF the lock-screen gap is still objectionable after the
   # InhibitDelayMaxSec=1 change above. Measure first: compare

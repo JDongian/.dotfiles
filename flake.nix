@@ -76,8 +76,8 @@
           home-manager.users.joshua = { config, pkgs, lib, ... }: {
             imports = [ ./home.nix inputs.hyprpower.homeManagerModules.default ];
             # Obsidian-specific monitor config (2560x1440 WQHD)
-            home.file.".config/hypr/monitor.conf".source =
-              ./dotfiles/hypr/hosts/obsidian-monitor.conf;
+            home.file.".config/hypr/monitor.lua".source =
+              ./dotfiles/hypr/hosts/obsidian-monitor.lua;
             # Obsidian-specific terminal font size: gohufont 14px, one bitmap
             # step up from the 11px the other hosts use.
             home.file.".config/foot/font.ini".source =

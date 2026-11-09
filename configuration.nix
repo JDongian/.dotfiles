@@ -113,7 +113,7 @@
   };
 
   # blueman provides the bluetooth tray applet (blueman-applet, started from
-  # hyprland.conf) and its manager window — the "original" bluetooth widget.
+  # hyprland.lua) and its manager window — the "original" bluetooth widget.
   # Reinstated 2026-09-27 after a brief overskride experiment: overskride has
   # no tray/applet mode, so it could not sit in the tray like pasystray/
   # nm-applet do. bluez itself comes from hardware.bluetooth above.

@@ -17,7 +17,7 @@ set -uo pipefail
 # No icon: the Nerd Font keyboard codepoint rendered as a stray triangle here,
 # and "DV" / "US" is self-explanatory without one.
 
-# Kept in sync with hyprland.conf's bind by hand -- there is no way to query a
+# Kept in sync with hyprland.lua's bind by hand -- there is no way to query a
 # bind for a given dispatcher, so if that keybind moves, change it here too.
 HOTKEY="Super+Shift+Space"
 

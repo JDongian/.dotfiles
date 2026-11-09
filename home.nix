@@ -30,15 +30,14 @@
   # =========================================================================
   wayland.windowManager.hyprland = {
     enable = true;
-    # `extraConfig` is raw hyprlang text; `settings = {}` means HM generates
-    # nothing of its own to clash with it. configType must stay "hyprlang":
-    # HM's hyprland module now defaults configType from "hyprlang" to "lua" (for
-    # stateVersion >= 26.05), and letting it flip to "lua" would try to
-    # interpret our raw hyprlang extraConfig as Lua. Pinning it here both keeps
-    # current behavior and silences the HM default-change warning.
-    configType = "hyprlang";
+    # `extraConfig` is raw Lua appended to the generated hyprland.lua;
+    # `settings = {}` means HM generates nothing of its own to clash with it.
+    # Hyprland 0.57 warns on hyprlang configs. Under Lua, `hyprctl dispatch`
+    # takes a Lua expression (`hyprctl dispatch 'hl.dsp.dpms({action="on"})'`),
+    # not the old `dispatch dpms on` form.
+    configType = "lua";
     settings = {};
-    extraConfig = builtins.readFile ./dotfiles/hypr/hyprland.conf;
+    extraConfig = builtins.readFile ./dotfiles/hypr/hyprland.lua;
   };
 
   # Hyprlock config (no native Home Manager module yet)
@@ -81,7 +80,7 @@
 
   # Fires a dunst OSD with the new brightness % on each change (see the script),
   # so brightness matches the volume popups pasystray shows. Wired to the
-  # XF86MonBrightness keys (hyprland.conf) and the waybar backlight scroll.
+  # XF86MonBrightness keys (hyprland.lua) and the waybar backlight scroll.
   home.file.".local/bin/brightness-osd" = {
     source = ./dotfiles/hypr/brightness-osd.sh;
     executable = true;

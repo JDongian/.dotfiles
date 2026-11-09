@@ -74,8 +74,8 @@ if [ -n "$hypr_sig" ]; then
     }
     echo ">>> refreshing running Hyprland (config reload + cursor theme bounce)"
     hypr -q reload || true
-    cursor_theme=$(grep -oP '^env = HYPRCURSOR_THEME,\K.*' dotfiles/hypr/hyprland.conf || true)
-    cursor_size=$(grep -oP '^env = HYPRCURSOR_SIZE,\K.*' dotfiles/hypr/hyprland.conf || true)
+    cursor_theme=$(grep -oP '^hl.env\("HYPRCURSOR_THEME", "\K[^"]+' dotfiles/hypr/hyprland.lua || true)
+    cursor_size=$(grep -oP '^hl.env\("HYPRCURSOR_SIZE", "\K[^"]+' dotfiles/hypr/hyprland.lua || true)
     if [ -n "$cursor_theme" ] && [ -n "$cursor_size" ]; then
         hypr -q setcursor Adwaita 24 || true
         hypr -q setcursor "$cursor_theme" "$cursor_size" || true
