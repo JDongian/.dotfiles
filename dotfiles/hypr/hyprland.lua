@@ -34,7 +34,6 @@ hl.env("HYPRSHOT_DIR", "/home/joshua/tmp/screenshots/")
 hl.config({
     cursor = {
         no_hardware_cursors = false,
-        enable_hyprcursor   = true,
     },
 
     general = {
@@ -46,9 +45,6 @@ hl.config({
             inactive_border = "rgba(595959aa)",
         },
         resize_on_border = true,
-        -- Please see https://wiki.hypr.land/configuring/extra/tearing/ before you turn this on
-        allow_tearing = false,
-        layout        = "dwindle",
     },
 
     decoration = {
@@ -61,8 +57,6 @@ hl.config({
             vibrancy = 0.1696,
         },
     },
-
-    animations = { enabled = true },
 
     dwindle = { preserve_split = true },
     master  = { new_status = "master" },
@@ -80,14 +74,9 @@ hl.config({
     debug = { disable_logs = false },
 
     input = {
-        kb_layout    = "us,us",
-        kb_variant   = "dvorak,",
-        kb_model     = "",
-        kb_options   = "ctrl:nocaps",
-        kb_rules     = "",
-        follow_mouse = 1,
-        sensitivity  = 0, -- -1.0 - 1.0, 0 means no modification.
-        touchpad     = { natural_scroll = false },
+        kb_layout  = "us,us",
+        kb_variant = "dvorak,",
+        kb_options = "ctrl:nocaps",
     },
 })
 
@@ -103,9 +92,6 @@ hl.animation({ leaf = "windows",    enabled = true,  speed = 3,    bezier = "eas
 hl.animation({ leaf = "fade",       enabled = true,  speed = 2,    bezier = "quick" })
 hl.animation({ leaf = "layers",     enabled = true,  speed = 3,    bezier = "easeOutQuint" })
 hl.animation({ leaf = "workspaces", enabled = false, speed = 1,    bezier = "almostLinear", style = "fade" })
-
--- New syntax (0.51+): Uncomment to enable 3-finger horizontal workspace switching
--- hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
 hl.device({ name = "epic-mouse-v1", sensitivity = -0.5 })
 
@@ -202,7 +188,7 @@ bind("minus",         zoom(0.6), { repeating = true })
 ---- WINDOWS AND WORKSPACES ----
 --------------------------------
 
--- Ignore maximize requests from apps. You'll probably like this.
+-- Ignore maximize requests from apps.
 hl.window_rule({ name = "suppress-maximize-events", match = { class = ".*" }, suppress_event = "maximize" })
 
 hl.layer_rule({ name = "ags-nm-panel-no-anim", match = { namespace = "ags-nm-panel" }, no_anim = true })
