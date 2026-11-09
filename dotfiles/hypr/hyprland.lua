@@ -1,8 +1,8 @@
 -- https://wiki.hypr.land/configuring/
 -- API reference: share/hypr/stubs/hl.meta.lua in the hyprland package.
 
--- Host-specific monitor config is required from ~/.config/hypr/monitor.lua
-require("monitor")
+-- Host-specific monitor config is loaded from ~/.config/hypr/monitor.lua
+dofile(os.getenv("HOME") .. "/.config/hypr/monitor.lua")
 
 local terminal    = "foot"
 local fileManager = "nautilus"
