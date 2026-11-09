@@ -3,7 +3,7 @@
 # critical urgency. Font is the system monospace (gohufont) at 14px, the same
 # size as the bar.
 #
-# Dunst is D-Bus-activated (no exec-once); after changing this file run
+# Dunst is D-Bus-activated (not autostarted); after changing this file run
 # `dunstctl reload` (or `pkill dunst` — it respawns on the next notification).
 
 [global]

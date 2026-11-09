@@ -115,7 +115,7 @@
   # =========================================================================
   # Dunst
   # =========================================================================
-  # Dunst is D-Bus-activated (org.knopwob.dunst.service), not exec-once'd, so
+  # Dunst is D-Bus-activated (org.knopwob.dunst.service), not autostarted, so
   # a rebuild alone won't restyle a running daemon: `dunstctl reload` (or
   # pkill dunst) after switching. Styling rationale lives in the dunstrc.
   home.file.".config/dunst/dunstrc".source = ./dotfiles/dunst/dunstrc;

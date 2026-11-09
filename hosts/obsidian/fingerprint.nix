@@ -153,8 +153,8 @@
   #      FRESH instance straight back up. A fresh instance claims + starts
   #      verifying within ~1s every time — verified across every "Started
   #      Hyprlock" in the journal.
-  #   c. Then DELETE the try-restart from after_sleep_cmd in
-  #      dotfiles/hypr/hypridle.conf, leaving only `hyprctl dispatch dpms on`.
+  #   c. Then DELETE the try-restart from after_sleep_cmd (hyprpower
+  #      generates hypridle.conf), leaving only the dpms-on dispatch.
   #      Path 3 disappears; only paths 1/2 remain, and they are the same path.
   #
   # WHY NOT JUST DELETE PATH 3 (option "B")
